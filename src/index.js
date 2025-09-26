@@ -1,5 +1,6 @@
 const BrowserController = require('./browser-controller');
 const HotkeyHandler = require('./hotkey-handler');
+const BehaviorProfile = require('./behavior-profile');
 
 class TinderBot {
     constructor() {
@@ -31,6 +32,10 @@ class TinderBot {
         
         while (this.isRunning && !this.hotkeys.isExitRequested()) {
             try {
+                // Generate behavior profile for this interaction
+                const behavior = new BehaviorProfile();
+                behavior.logBehavior(); // Debug info
+
                 console.log('🔍 Checking new profile...');
 
                 // FIRST: Check if profile is recently active
@@ -39,17 +44,17 @@ class TinderBot {
                 if (isRecentlyActive) {
                     console.log('✅ Found Recently Active - viewing photos');
 
-                    // Wait a bit before viewing photos
-                    const thinkingDelay = Math.floor(Math.random() * 2000) + 1000; // 1-3s
+                    // Wait a bit before viewing photos (using behavior profile)
+                    const thinkingDelay = behavior.getThinkingDelay();
                     console.log(`   🤔 Thinking for ${Math.round(thinkingDelay/1000)}s...`);
                     await this.delay(thinkingDelay);
 
-                    // View photos to simulate human behavior
-                    await this.browser.viewPhotos();
+                    // View photos with centralized behavior
+                    await this.browser.viewPhotos(behavior);
 
                     // Final pause before like
                     console.log('   ⏳ Final decision moment...');
-                    await this.delay(300);
+                    await this.delay(behavior.getFinalPause());
 
                     console.log('💖 Sending LIKE');
                     const likeSuccess = await this.browser.clickLikeButton();
@@ -66,8 +71,8 @@ class TinderBot {
                 } else {
                     console.log('❌ Profile not recently active - sending quick NOPE');
 
-                    // Quick decision - random delay 300-800ms
-                    const quickDelay = Math.floor(Math.random() * 500) + 300;
+                    // Quick decision using behavior profile
+                    const quickDelay = behavior.getQuickDecisionDelay();
                     console.log(`   ⚡ Quick decision in ${quickDelay}ms...`);
                     await this.delay(quickDelay);
 
@@ -80,8 +85,8 @@ class TinderBot {
                     }
                 }
 
-                // Wait before next profile - random delay between 3-8 seconds
-                const nextProfileDelay = Math.floor(Math.random() * 5000) + 3000;
+                // Wait before next profile using behavior profile
+                const nextProfileDelay = behavior.getNextProfileDelay();
                 console.log(`⏳ Waiting ${Math.round(nextProfileDelay/1000)}s for next profile...`);
                 await this.delay(nextProfileDelay);
 

@@ -187,34 +187,28 @@ class BrowserController {
     }
   }
 
-  async viewPhotos() {
+  async viewPhotos(behavior) {
     console.log("📸 Viewing profile photos...");
 
     try {
-      // Random number of photos to view (1-3)
-      const photosToView = Math.floor(Math.random() * 3) + 1;
-      console.log(`   Will view ${photosToView} photos`);
+      const photoData = behavior.getPhotoViewingBehavior();
+      console.log(`   Will view ${photoData.count} photos`);
 
-      for (let i = 0; i < photosToView; i++) {
-        // Random delay between 500-3000ms
-        const delay = Math.floor(Math.random() * 2500) + 500;
-        console.log(`   📷 Photo ${i + 1}/${photosToView} - waiting ${delay}ms...`);
+      for (let i = 0; i < photoData.count; i++) {
+        const delay = photoData.delays[i];
+        console.log(`   📷 Photo ${i + 1}/${photoData.count} - waiting ${delay}ms...`);
 
         await this.delay(delay);
 
-        // Sometimes move mouse randomly
-        if (Math.random() < 0.4) { // 40% chance
-          await this.randomMouseMove();
+        // Mouse movement based on behavior profile
+        const mouseData = behavior.getMouseMovementBehavior();
+        if (mouseData.shouldMove) {
+          await this.randomMouseMove(mouseData);
         }
 
         await this.page.keyboard.press('Space');
         console.log(`   ✅ Spacebar pressed - next photo`);
       }
-
-      // Final pause before decision
-      const finalDelay = Math.floor(Math.random() * 1500) + 500;
-      console.log(`   🤔 Thinking time: ${finalDelay}ms...`);
-      await this.delay(finalDelay);
 
       return true;
 
@@ -224,7 +218,7 @@ class BrowserController {
     }
   }
 
-  async randomMouseMove() {
+  async randomMouseMove(mouseData) {
     try {
       // Get viewport size
       const viewport = this.page.viewportSize();
@@ -241,9 +235,9 @@ class BrowserController {
 
       console.log(`   🖱️  Smoothly moving mouse to (${targetX}, ${targetY})`);
 
-      // Calculate smooth movement steps and timing
-      const totalDuration = Math.floor(Math.random() * 800) + 1300; // 1300-2100ms
-      const steps = Math.floor(Math.random() * 15) + 10; // 10-24 steps
+      // Use centralized timing from behavior profile
+      const totalDuration = mouseData.duration;
+      const steps = mouseData.steps;
       const stepDelay = Math.floor(totalDuration / steps);
 
       const deltaX = (targetX - startX) / steps;
