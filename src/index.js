@@ -31,26 +31,31 @@ class TinderBot {
         
         while (this.isRunning && !this.hotkeys.isExitRequested()) {
             try {
-                // Random delay between 3-8 seconds to avoid deterministic behavior
-                const randomDelay = Math.floor(Math.random() * 5000) + 3000;
-                console.log(`⏱️  ${Math.round(randomDelay/1000)}s pause...`);
-                await this.delay(randomDelay);
+                console.log('🔍 Checking new profile...');
 
-                console.log('🔍 Checking profile...');
-
-                // First, view photos to simulate human behavior
-                await this.browser.viewPhotos();
-
-                // Check if profile is recently active
+                // FIRST: Check if profile is recently active
                 const isRecentlyActive = await this.browser.checkForRecentlyActive();
 
                 if (isRecentlyActive) {
-                    console.log('📍 Looking for Recently Active span...');
-                    console.log('✅ Found Recently Active - sending LIKE');
+                    console.log('✅ Found Recently Active - viewing photos');
+
+                    // Wait a bit before viewing photos
+                    const thinkingDelay = Math.floor(Math.random() * 2000) + 1000; // 1-3s
+                    console.log(`   🤔 Thinking for ${Math.round(thinkingDelay/1000)}s...`);
+                    await this.delay(thinkingDelay);
+
+                    // View photos to simulate human behavior
+                    await this.browser.viewPhotos();
+
+                    // Final pause before like
+                    console.log('   ⏳ Final decision moment...');
+                    await this.delay(300);
+
+                    console.log('💖 Sending LIKE');
                     const likeSuccess = await this.browser.clickLikeButton();
 
                     if (likeSuccess) {
-                        console.log('💖 LIKE sent successfully');
+                        console.log('✅ LIKE sent successfully');
                     } else {
                         console.log('❌ Failed to send LIKE - sending NOPE instead');
                         const nopeSuccess = await this.browser.clickNopeButton();
@@ -59,7 +64,13 @@ class TinderBot {
                         }
                     }
                 } else {
-                    console.log('❌ Profile not recently active - sending NOPE');
+                    console.log('❌ Profile not recently active - sending quick NOPE');
+
+                    // Quick decision - random delay 300-800ms
+                    const quickDelay = Math.floor(Math.random() * 500) + 300;
+                    console.log(`   ⚡ Quick decision in ${quickDelay}ms...`);
+                    await this.delay(quickDelay);
+
                     const nopeSuccess = await this.browser.clickNopeButton();
 
                     if (nopeSuccess) {
@@ -69,9 +80,10 @@ class TinderBot {
                     }
                 }
 
-                // Wait a bit before next profile
-                console.log('⏳ Waiting for next profile...');
-                await this.delay(3000);
+                // Wait before next profile - random delay between 3-8 seconds
+                const nextProfileDelay = Math.floor(Math.random() * 5000) + 3000;
+                console.log(`⏳ Waiting ${Math.round(nextProfileDelay/1000)}s for next profile...`);
+                await this.delay(nextProfileDelay);
 
             } catch (error) {
                 console.error('⚠️  Loop error:', error.message);
