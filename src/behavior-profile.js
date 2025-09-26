@@ -10,7 +10,7 @@ class BehaviorProfile {
                 thinking: [500, 1500],      // Quick decisions
                 quickDecision: [200, 400],  // Very fast nopes
                 nextProfile: [2000, 4000],  // Short breaks
-                photoCount: [1, 2],         // Few photos
+                photoCount: [0, 1],         // Few photos
                 photoDelay: [300, 800],     // Quick photo viewing
                 mouseChance: 0.2,           // Rare mouse movement
                 mouseDuration: [1300, 1600], // Fast mouse
@@ -30,7 +30,7 @@ class BehaviorProfile {
                 thinking: [2000, 5000],     // Longer thinking
                 quickDecision: [500, 1200], // Still quick but not rushed
                 nextProfile: [4000, 10000], // Longer breaks
-                photoCount: [2, 3],         // More photos
+                photoCount: [2, 4],         // More photos
                 photoDelay: [800, 4000],    // Slower photo viewing
                 mouseChance: 0.6,           // More mouse movement
                 mouseDuration: [1600, 2100], // Slower mouse
@@ -46,6 +46,9 @@ class BehaviorProfile {
     }
 
     generateBehavior() {
+        // Generate photo count first
+        const photoCount = this.randomInRange(this.personality.photoCount);
+
         this.timings = {
             // Main flow timings
             thinkingDelay: this.randomInRange(this.personality.thinking),
@@ -55,8 +58,8 @@ class BehaviorProfile {
 
             // Photo viewing behavior
             photoViewing: {
-                count: this.randomInRange(this.personality.photoCount),
-                delays: this.generatePhotoDelays()
+                count: photoCount,
+                delays: this.generatePhotoDelays(photoCount)
             },
 
             // Mouse movement behavior
@@ -68,9 +71,9 @@ class BehaviorProfile {
         };
     }
 
-    generatePhotoDelays() {
+    generatePhotoDelays(count) {
         const delays = [];
-        for (let i = 0; i < this.timings.photoViewing.count; i++) {
+        for (let i = 0; i < count; i++) {
             delays.push(this.randomInRange(this.personality.photoDelay));
         }
         return delays;
