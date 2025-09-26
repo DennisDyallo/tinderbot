@@ -31,8 +31,10 @@ class TinderBot {
         
         while (this.isRunning && !this.hotkeys.isExitRequested()) {
             try {
-                console.log('⏱️  5 second pause...');
-                await this.delay(5000);
+                // Random delay between 3-8 seconds to avoid deterministic behavior
+                const randomDelay = Math.floor(Math.random() * 5000) + 3000;
+                console.log(`⏱️  ${Math.round(randomDelay/1000)}s pause...`);
+                await this.delay(randomDelay);
 
                 console.log('🔍 Checking profile...');
 
