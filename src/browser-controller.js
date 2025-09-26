@@ -201,6 +201,12 @@ class BrowserController {
         console.log(`   📷 Photo ${i + 1}/${photosToView} - waiting ${delay}ms...`);
 
         await this.delay(delay);
+
+        // Sometimes move mouse randomly
+        if (Math.random() < 0.4) { // 40% chance
+          await this.randomMouseMove();
+        }
+
         await this.page.keyboard.press('Space');
         console.log(`   ✅ Spacebar pressed - next photo`);
       }
@@ -215,6 +221,55 @@ class BrowserController {
     } catch (error) {
       console.error("💥 Error viewing photos:", error.message);
       return false;
+    }
+  }
+
+  async randomMouseMove() {
+    try {
+      // Get viewport size
+      const viewport = this.page.viewportSize();
+      const width = viewport ? viewport.width : 1200;
+      const height = viewport ? viewport.height : 800;
+
+      // Get current mouse position (start from center if unknown)
+      const startX = 600;
+      const startY = 400;
+
+      // Generate random target coordinates within viewport
+      const targetX = Math.floor(Math.random() * (width - 100)) + 50;
+      const targetY = Math.floor(Math.random() * (height - 100)) + 50;
+
+      console.log(`   🖱️  Smoothly moving mouse to (${targetX}, ${targetY})`);
+
+      // Calculate smooth movement steps and timing
+      const totalDuration = Math.floor(Math.random() * 800) + 1300; // 1300-2100ms
+      const steps = Math.floor(Math.random() * 15) + 10; // 10-24 steps
+      const stepDelay = Math.floor(totalDuration / steps);
+
+      const deltaX = (targetX - startX) / steps;
+      const deltaY = (targetY - startY) / steps;
+
+      // Perform smooth movement
+      for (let i = 0; i <= steps; i++) {
+        const currentX = Math.round(startX + deltaX * i);
+        const currentY = Math.round(startY + deltaY * i);
+
+        await this.page.mouse.move(currentX, currentY);
+
+        // Consistent step delay to maintain total duration
+        if (i < steps) {
+          await this.delay(stepDelay);
+        }
+      }
+
+      // Sometimes add a small pause after movement
+      if (Math.random() < 0.3) {
+        const pauseTime = Math.floor(Math.random() * 300) + 100;
+        await this.delay(pauseTime);
+      }
+
+    } catch (error) {
+      console.log(`   🖱️  Mouse move failed: ${error.message}`);
     }
   }
 
