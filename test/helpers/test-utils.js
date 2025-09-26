@@ -214,12 +214,14 @@ class MockBrowserController {
         this.checkForRecentlyActiveResult = true;
         this.clickLikeButtonResult = true;
         this.clickNopeButtonResult = true;
+        this.dismissDialogsResult = false;
 
         this.waitForProfilePhotoCalled = false;
         this.checkForRecentlyActiveCalled = false;
         this.clickLikeButtonCalled = false;
         this.clickNopeButtonCalled = false;
         this.viewPhotosCalled = false;
+        this.dismissDialogsCalled = false;
 
         this.page = new MockPage();
     }
@@ -260,6 +262,14 @@ class MockBrowserController {
         this.viewPhotosCalled = true;
         this.viewPhotosCalledWith = behavior;
         return true;
+    }
+
+    async dismissDialogs() {
+        this.dismissDialogsCalled = true;
+        if (typeof this.dismissDialogsResult === 'function') {
+            return await this.dismissDialogsResult();
+        }
+        return this.dismissDialogsResult;
     }
 }
 

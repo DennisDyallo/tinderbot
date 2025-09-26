@@ -15,6 +15,9 @@ class AnalyzingState extends BaseState {
             return { nextState: 'SHUTDOWN' };
         }
 
+        // Check for dialogs that might interrupt the flow
+        await this.checkForDialogs();
+
         const browser = this.getBrowser();
         if (!browser) {
             return { error: 'Browser not available in context' };

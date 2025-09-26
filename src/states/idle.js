@@ -7,7 +7,7 @@ class IdleState extends BaseState {
 
     async onEnter(data = {}) {
         await super.onEnter(data);
-        console.log('😴 Waiting for next profile...');
+        console.log('😴 IDLE state (fallback) - should not normally reach here');
     }
 
     async execute() {
@@ -15,23 +15,24 @@ class IdleState extends BaseState {
             return { nextState: 'SHUTDOWN' };
         }
 
-        const behavior = this.getBehavior();
+        const browser = this.getBrowser();
+        if (!browser) {
+            return { error: 'Browser not available in context' };
+        }
 
         try {
-            // Get next profile delay from behavior profile or use fallback
-            let nextProfileDelay;
-            if (behavior) {
-                nextProfileDelay = behavior.getNextProfileDelay();
+            console.log('⚠️  IDLE state reached - waiting for profile to appear...');
+
+            // Wait for profile photo directly instead of arbitrary delay
+            const profileLoaded = await browser.waitForProfilePhoto();
+
+            if (profileLoaded) {
+                console.log('🔄 Profile loaded - transitioning to analyze');
+                return { nextState: 'ANALYZING' };
             } else {
-                console.log('⚠️  No behavior profile available - using fallback next profile delay');
-                nextProfileDelay = this.getHumanizedDelay(5500, 55); // ~2.5-8.5s with variation
+                console.log('❌ Profile load timeout in IDLE state');
+                return { nextState: 'ERROR', data: { error: 'Profile load timeout in idle state' } };
             }
-
-            console.log(`⏳ Waiting ${Math.round(nextProfileDelay/1000)}s for next profile...`);
-            await this.delay(nextProfileDelay);
-
-            console.log('🔍 Ready for next profile - checking if loaded');
-            return { nextState: 'WAITING_FOR_PROFILE' };
 
         } catch (error) {
             console.error('💥 Error during idle phase:', error.message);

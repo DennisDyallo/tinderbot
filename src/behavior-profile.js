@@ -5,6 +5,9 @@ class BehaviorProfile {
         this.randomProvider = randomProvider || RandomProvider.getInstance();
         this.personality = this.selectPersonality();
         this.generateBehavior();
+        this.profileCount = 0; // Track profiles processed
+        this.sessionStartTime = Date.now();
+        this.lastVariationUpdate = 0;
     }
 
     selectPersonality() {
@@ -101,8 +104,76 @@ class BehaviorProfile {
         return 'normal';
     }
 
+    // Method called after each profile to track usage and potentially update behavior
+    onProfileCompleted() {
+        this.profileCount++;
+
+        // Update behavior every 5-10 profiles with some randomness
+        const updateInterval = this.randomProvider.randomInRange(5, 10);
+
+        if (this.profileCount - this.lastVariationUpdate >= updateInterval) {
+            this.applyBehaviorVariation();
+            this.lastVariationUpdate = this.profileCount;
+        }
+    }
+
+    // Apply subtle variations to make behavior less predictable
+    applyBehaviorVariation() {
+        console.log(`🔄 Applying behavior variation (profile ${this.profileCount})`);
+
+        // Apply ±10-20% variation to existing timings
+        const variationFactor = this.randomProvider.randomFloat(0.85, 1.20);
+
+        // Apply session fatigue (gradually increase delays as session progresses)
+        const sessionMinutes = (Date.now() - this.sessionStartTime) / 60000;
+        const fatigueFactor = 1 + (sessionMinutes * 0.01); // 1% increase per minute
+
+        const combinedFactor = variationFactor * fatigueFactor;
+
+        // Update timings with variations
+        this.timings.thinkingDelay = Math.round(this.timings.thinkingDelay * combinedFactor);
+        this.timings.quickDecisionDelay = Math.round(this.timings.quickDecisionDelay * combinedFactor);
+        this.timings.nextProfileDelay = Math.round(this.timings.nextProfileDelay * combinedFactor);
+        this.timings.finalPause = Math.round(this.timings.finalPause * combinedFactor);
+
+        // Occasionally change photo viewing behavior
+        if (this.randomProvider.randomBoolean(0.3)) { // 30% chance
+            const newPhotoCount = this.randomProvider.randomInRange(this.personality.photoCount);
+            if (newPhotoCount !== this.timings.photoViewing.count) {
+                this.timings.photoViewing.count = newPhotoCount;
+                this.timings.photoViewing.delays = this.generatePhotoDelays(newPhotoCount);
+                console.log(`   📷 Photo viewing updated: ${newPhotoCount} photos`);
+            }
+        }
+
+        // Occasionally toggle mouse movement
+        if (this.randomProvider.randomBoolean(0.2)) { // 20% chance
+            this.timings.mouseMovement.shouldMove = this.randomProvider.randomBoolean(this.personality.mouseChance);
+            console.log(`   🖱️  Mouse movement toggled: ${this.timings.mouseMovement.shouldMove}`);
+        }
+
+        console.log(`   ⚡ Variation applied: ${Math.round((combinedFactor - 1) * 100)}% timing change`);
+    }
+
+    // Simulate natural breaks in behavior
+    shouldTakeBreak() {
+        // Take longer breaks occasionally (every 15-25 profiles)
+        const breakInterval = this.randomProvider.randomInRange(15, 25);
+        return this.profileCount > 0 && (this.profileCount % breakInterval === 0);
+    }
+
+    getBreakDelay() {
+        // Natural break: 30-90 seconds
+        const breakDelay = this.randomProvider.randomInRange(30000, 90000);
+        console.log(`🛑 Taking natural break: ${Math.round(breakDelay/1000)}s`);
+        return breakDelay;
+    }
+
     logBehavior() {
-        console.log(`🧠 Personality: ${this.getPersonalityType()}`);
+        const personalityType = this.getPersonalityType();
+        const sessionMinutes = Math.round((Date.now() - this.sessionStartTime) / 60000);
+
+        console.log(`🧠 Personality: ${personalityType} (profiles: ${this.profileCount}, session: ${sessionMinutes}m)`);
         console.log(`   Thinking: ${this.timings.thinkingDelay}ms`);
         console.log(`   Quick decision: ${this.timings.quickDecisionDelay}ms`);
         console.log(`   Next profile: ${this.timings.nextProfileDelay}ms`);

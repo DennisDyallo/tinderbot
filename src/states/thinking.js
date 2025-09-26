@@ -15,6 +15,9 @@ class ThinkingState extends BaseState {
             return { nextState: 'SHUTDOWN' };
         }
 
+        // Check for dialogs that might interrupt the flow
+        await this.checkForDialogs();
+
         const behavior = this.getBehavior();
 
         try {

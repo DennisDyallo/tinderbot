@@ -15,6 +15,9 @@ class ViewingPhotosState extends BaseState {
             return { nextState: 'SHUTDOWN' };
         }
 
+        // Check for dialogs that might interrupt the flow
+        await this.checkForDialogs();
+
         const browser = this.getBrowser();
         const behavior = this.getBehavior();
 

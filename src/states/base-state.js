@@ -68,6 +68,24 @@ class BaseState {
     getHumanizedDelay(baseMs, variationPercent = 20) {
         return this.randomProvider.getHumanizedDelay(baseMs, variationPercent);
     }
+
+    // Common method to check for and dismiss popup dialogs
+    async checkForDialogs() {
+        const browser = this.getBrowser();
+        if (browser) {
+            try {
+                const dialogDismissed = await browser.dismissDialogs();
+                if (dialogDismissed) {
+                    console.log('🧹 Dialog dismissed - continuing state execution');
+                }
+                return dialogDismissed;
+            } catch (error) {
+                console.log(`⚠️  Dialog check failed: ${error.message}`);
+                return false;
+            }
+        }
+        return false;
+    }
 }
 
 module.exports = BaseState;

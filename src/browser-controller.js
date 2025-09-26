@@ -206,18 +206,32 @@ class BrowserController {
   async checkForRecentlyActive() {
     console.log("🔍 Checking profile for Recently Active status...");
 
-    const selectors = [
-      'span.C\\(\\$c-ds-text-primary-overlay\\).Typs\\(body-2-regular\\)--ml.Typs\\(body-3-regular\\)',
+    // First check for the green dot indicator (most reliable)
+    const dotSelector = 'div[class*="Bgc($c-ds-background-badge-online-now-default)"]';
+
+    try {
+      const greenDot = await this.page.$(dotSelector);
+      if (greenDot && await greenDot.isVisible()) {
+        console.log("✅ Found Recently Active - green dot indicator detected!");
+        return true;
+      }
+    } catch (error) {
+      console.log(`   Green dot check failed: ${error.message}`);
+    }
+
+    // Fallback to text-based detection
+    const textSelectors = [
       'span:has-text("Recently Active")',
+      'span:text-is("Recently Active")',
+      'span.C\\(\\$c-ds-text-primary-overlay\\).Typs\\(body-2-regular\\)--ml.Typs\\(body-3-regular\\)',
       'span[class*="C($c-ds-text-primary-overlay)"]',
-      '[data-testid*="recently-active"]',
-      'span:text-is("Recently Active")'
+      '[data-testid*="recently-active"]'
     ];
 
     try {
-      for (let i = 0; i < selectors.length; i++) {
-        const selector = selectors[i];
-        console.log(`📍 Trying selector ${i + 1}/${selectors.length}: ${selector}`);
+      for (let i = 0; i < textSelectors.length; i++) {
+        const selector = textSelectors[i];
+        console.log(`📍 Trying text selector ${i + 1}/${textSelectors.length}: ${selector}`);
 
         try {
           const elements = await this.page.$$(selector);
@@ -229,7 +243,7 @@ class BrowserController {
             console.log(`   Element text: "${textContent}", visible: ${isVisible}`);
 
             if (textContent && textContent.includes("Recently Active") && isVisible) {
-              console.log("✅ Found Recently Active - profile is recently active!");
+              console.log(`✅ Found Recently Active - text detection using selector: ${selector}`);
               return true;
             }
           }
@@ -404,6 +418,68 @@ class BrowserController {
     }
   }
 
+  async dismissDialogs() {
+    console.log("🔍 Checking for popup dialogs...");
+
+    try {
+      // Check for Add to Home Screen dialog
+      const homeScreenDialog = await this.checkAndDismissDialog(
+        'div[role="dialog"][aria-modal="true"]',
+        'button:has-text("Not interested")',
+        'Add to Home Screen'
+      );
+
+      // Check for Super Like dialog
+      const superLikeDialog = await this.checkAndDismissDialog(
+        'div[role="dialog"][aria-modal="true"]',
+        'button:has-text("No Thanks")',
+        'Super Like'
+      );
+
+      return homeScreenDialog || superLikeDialog;
+
+    } catch (error) {
+      console.log(`⚠️  Dialog dismissal failed: ${error.message}`);
+      return false;
+    }
+  }
+
+  async checkAndDismissDialog(dialogSelector, dismissButtonSelector, dialogType) {
+    try {
+      // Check if dialog exists
+      const dialog = await this.page.$(dialogSelector);
+      if (!dialog) return false;
+
+      // Verify it's visible
+      const isVisible = await dialog.isVisible();
+      if (!isVisible) return false;
+
+      console.log(`🚨 Found ${dialogType} dialog - dismissing...`);
+
+      // Find and click dismiss button
+      const dismissButton = await this.page.$(dismissButtonSelector);
+      if (dismissButton && await dismissButton.isVisible()) {
+        await dismissButton.click();
+        console.log(`✅ ${dialogType} dialog dismissed`);
+
+        // Wait for dialog to disappear
+        await this.page.waitForSelector(dialogSelector, {
+          state: 'hidden',
+          timeout: 3000
+        }).catch(() => {});
+
+        return true;
+      } else {
+        console.log(`⚠️  ${dialogType} dialog found but dismiss button not found`);
+        return false;
+      }
+
+    } catch (error) {
+      console.log(`⚠️  Error handling ${dialogType} dialog: ${error.message}`);
+      return false;
+    }
+  }
+
   async takeDebugScreenshot(filename) {
     try {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -420,9 +496,11 @@ class BrowserController {
 
   async waitForProfilePhoto() {
     const selectors = [
-      'div[aria-label^="Profile Photo"]',
+      'div[aria-label="Profile Photo 1"]', // Primary selector from HTML analysis
+      'div[aria-label^="Profile Photo"]',  // General profile photo selector
       'div[role="img"][aria-label*="Profile Photo"]',
       'div.StretchedBox[aria-label^="Profile Photo"]',
+      'div.StretchedBox[role="img"]' // Fallback for StretchedBox images
     ];
 
     console.log('🔍 Waiting for profile photo to appear...');
@@ -448,7 +526,7 @@ class BrowserController {
               const ariaLabel = await element.getAttribute('aria-label');
 
               if (isVisible && ariaLabel && ariaLabel.includes('Profile Photo')) {
-                console.log(`✅ Profile photo found: "${ariaLabel}"`);
+                console.log(`✅ Profile photo found: "${ariaLabel}" using selector: ${selector}`);
                 return true;
               }
             }
