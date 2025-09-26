@@ -1,7 +1,10 @@
+const RandomProvider = require('../random-provider');
+
 class BaseState {
-    constructor(name) {
+    constructor(name, randomProvider = null) {
         this.name = name;
         this.stateMachine = null;
+        this.randomProvider = randomProvider || RandomProvider.getInstance();
     }
 
     setStateMachine(stateMachine) {
@@ -63,9 +66,7 @@ class BaseState {
 
     // Common method to generate humanized delay with some randomness
     getHumanizedDelay(baseMs, variationPercent = 20) {
-        const variation = baseMs * (variationPercent / 100);
-        const randomVariation = (Math.random() * 2 - 1) * variation; // -variation to +variation
-        return Math.max(50, Math.round(baseMs + randomVariation)); // minimum 50ms
+        return this.randomProvider.getHumanizedDelay(baseMs, variationPercent);
     }
 }
 

@@ -34,13 +34,11 @@ describe('StateMachine', () => {
     let stateMachine;
     let mockStateA;
     let mockStateB;
-    let mockStateC;
 
     beforeEach(() => {
         stateMachine = new StateMachine();
         mockStateA = new MockState('A');
         mockStateB = new MockState('B');
-        mockStateC = new MockState('C');
     });
 
     describe('constructor', () => {
@@ -52,8 +50,7 @@ describe('StateMachine', () => {
         });
 
         it('should accept initial state', () => {
-            stateMachine.registerState('INITIAL', mockStateA);
-            const smWithInitial = new StateMachine('INITIAL');
+            const smWithInitial = new StateMachine();
             smWithInitial.registerState('INITIAL', mockStateA);
             smWithInitial.setInitialState('INITIAL');
             expect(smWithInitial.currentState).toBe('INITIAL');

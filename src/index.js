@@ -2,6 +2,7 @@ const BrowserController = require('./browser-controller');
 const HotkeyHandler = require('./hotkey-handler');
 const BehaviorProfile = require('./behavior-profile');
 const StateMachine = require('./state-machine');
+const RandomProvider = require('./random-provider');
 
 // Import all state classes
 const WaitingForProfileState = require('./states/waiting-for-profile');
@@ -16,10 +17,11 @@ const ErrorState = require('./states/error');
 const ShutdownState = require('./states/shutdown');
 
 class TinderBot {
-    constructor() {
+    constructor(randomProvider = null) {
         this.browser = new BrowserController();
         this.hotkeys = new HotkeyHandler();
         this.isRunning = false;
+        this.randomProvider = randomProvider || RandomProvider.getInstance();
         this.stateMachine = new StateMachine();
         this.setupStateMachine();
     }
@@ -39,7 +41,7 @@ class TinderBot {
 
         // Define state transitions with humanized delays
         this.stateMachine.defineTransition('WAITING_FOR_PROFILE', 'ANALYZING', {
-            delay: this.getRandomDelay(50, 200) // Human reaction delay after profile loads
+            delay: this.randomProvider.randomInRange(50, 200) // Human reaction delay after profile loads
         });
 
         this.stateMachine.defineTransition('ANALYZING', 'THINKING', {
@@ -63,11 +65,11 @@ class TinderBot {
         });
 
         this.stateMachine.defineTransition('LIKING', 'IDLE', {
-            delay: this.getRandomDelay(800, 1200) // Brief pause after action
+            delay: this.randomProvider.randomInRange(800, 1200) // Brief pause after action
         });
 
         this.stateMachine.defineTransition('NOPING', 'IDLE', {
-            delay: this.getRandomDelay(600, 1000) // Brief pause after action
+            delay: this.randomProvider.randomInRange(600, 1000) // Brief pause after action
         });
 
         this.stateMachine.defineTransition('IDLE', 'WAITING_FOR_PROFILE', {
@@ -92,10 +94,7 @@ class TinderBot {
         // Set up context with shared resources
         this.stateMachine.setContext('browser', this.browser);
         this.stateMachine.setContext('hotkeys', this.hotkeys);
-    }
-
-    getRandomDelay(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
+        this.stateMachine.setContext('randomProvider', this.randomProvider);
     }
 
     async start() {
@@ -108,7 +107,7 @@ class TinderBot {
 
             // Generate behavior profile and add to context
             try {
-                const behavior = new BehaviorProfile();
+                const behavior = new BehaviorProfile(this.randomProvider);
                 behavior.logBehavior();
                 this.stateMachine.setContext('behavior', behavior);
             } catch (behaviorError) {

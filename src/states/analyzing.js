@@ -1,8 +1,8 @@
 const BaseState = require('./base-state');
 
 class AnalyzingState extends BaseState {
-    constructor() {
-        super('ANALYZING');
+    constructor(randomProvider = null) {
+        super('ANALYZING', randomProvider);
     }
 
     async onEnter(data = {}) {

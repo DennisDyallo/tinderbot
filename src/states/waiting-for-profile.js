@@ -1,8 +1,8 @@
 const BaseState = require('./base-state');
 
 class WaitingForProfileState extends BaseState {
-    constructor() {
-        super('WAITING_FOR_PROFILE');
+    constructor(randomProvider = null) {
+        super('WAITING_FOR_PROFILE', randomProvider);
         this.maxWaitTime = 30000; // 30 seconds maximum wait
         this.checkInterval = 500; // Check every 500ms
     }

@@ -1,4 +1,5 @@
 const WaitingForProfileState = require('../../../src/states/waiting-for-profile');
+const { MockRandomProvider } = require('../../helpers/test-utils');
 
 // Mock dependencies
 class MockStateMachine {
@@ -43,9 +44,11 @@ describe('WaitingForProfileState', () => {
     let mockStateMachine;
     let mockBrowser;
     let mockHotkeys;
+    let mockRandomProvider;
 
     beforeEach(() => {
-        state = new WaitingForProfileState();
+        mockRandomProvider = new MockRandomProvider();
+        state = new WaitingForProfileState(mockRandomProvider);
         mockStateMachine = new MockStateMachine();
         mockBrowser = new MockBrowserController();
         mockHotkeys = new MockHotkeyHandler();
@@ -53,7 +56,8 @@ describe('WaitingForProfileState', () => {
         state.setStateMachine(mockStateMachine);
         mockStateMachine.context = {
             browser: mockBrowser,
-            hotkeys: mockHotkeys
+            hotkeys: mockHotkeys,
+            randomProvider: mockRandomProvider
         };
     });
 
@@ -147,21 +151,21 @@ describe('WaitingForProfileState', () => {
 
         it('should apply humanized reaction delay when profile loads', async () => {
             mockBrowser.waitForProfilePhotoResult = true;
+            mockRandomProvider.setFixedValue('getHumanizedDelay', 150);
             const delaySpy = jest.spyOn(state, 'delay').mockResolvedValue();
-            const humanizedDelaySpy = jest.spyOn(state, 'getHumanizedDelay').mockReturnValue(150);
 
             await state.execute();
 
-            expect(humanizedDelaySpy).toHaveBeenCalledWith(125, 60);
+            expect(mockRandomProvider.getCallCount('getHumanizedDelay')).toBe(1);
             expect(delaySpy).toHaveBeenCalledWith(150);
 
             delaySpy.mockRestore();
-            humanizedDelaySpy.mockRestore();
         });
 
         it('should log appropriate messages during execution', async () => {
             const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
             mockBrowser.waitForProfilePhotoResult = true;
+            mockRandomProvider.setFixedValue('getHumanizedDelay', 150);
             jest.spyOn(state, 'delay').mockResolvedValue();
 
             await state.execute();
@@ -233,15 +237,14 @@ describe('WaitingForProfileState', () => {
     describe('timing and delays', () => {
         it('should use getHumanizedDelay for reaction timing', async () => {
             mockBrowser.waitForProfilePhotoResult = true;
+            mockRandomProvider.setFixedValue('getHumanizedDelay', 123);
             jest.spyOn(state, 'delay').mockResolvedValue();
-
-            const humanizedSpy = jest.spyOn(state, 'getHumanizedDelay').mockReturnValue(123);
 
             await state.execute();
 
-            expect(humanizedSpy).toHaveBeenCalledWith(125, 60);
-
-            humanizedSpy.mockRestore();
+            const lastCall = mockRandomProvider.getLastCall('getHumanizedDelay');
+            expect(lastCall.args).toEqual([125, 60]);
+            expect(lastCall.result).toBe(123);
         });
     });
 });

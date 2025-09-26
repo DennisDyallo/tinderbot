@@ -1,5 +1,169 @@
 // Test utility functions for Tinder Bot state machine tests
 
+// Mock RandomProvider for testing
+class MockRandomProvider {
+    constructor() {
+        this.reset();
+        this.callLog = [];
+    }
+
+    reset() {
+        // Predefined sequences for predictable testing
+        this.sequences = {
+            randomInRange: [150, 800, 2500, 400, 5000], // Cycling values
+            randomFloat: [0.3, 0.7, 0.1, 0.9, 0.5],
+            randomBoolean: [true, false, true, false, true],
+            getHumanizedDelay: [150, 300, 450, 200, 350]
+        };
+        this.counters = {
+            randomInRange: 0,
+            randomFloat: 0,
+            randomBoolean: 0,
+            getHumanizedDelay: 0,
+            random: 0
+        };
+        this.fixedValues = {};
+    }
+
+    // Allow setting fixed values for specific methods
+    setFixedValue(method, value) {
+        this.fixedValues[method] = value;
+    }
+
+    // Allow setting sequences for methods
+    setSequence(method, values) {
+        this.sequences[method] = [...values];
+        this.counters[method] = 0;
+    }
+
+    // Log method calls for testing
+    _logCall(method, args, result) {
+        this.callLog.push({ method, args, result, timestamp: Date.now() });
+        return result;
+    }
+
+    random() {
+        this.counters.random++;
+        const result = this.fixedValues.random !== undefined
+            ? this.fixedValues.random
+            : 0.5; // Fixed predictable value
+        return this._logCall('random', [], result);
+    }
+
+    randomInRange(min, max) {
+        if (Array.isArray(min)) {
+            [min, max] = min;
+        }
+
+        let result;
+        if (this.fixedValues.randomInRange !== undefined) {
+            result = this.fixedValues.randomInRange;
+        } else {
+            const sequence = this.sequences.randomInRange;
+            const index = this.counters.randomInRange % sequence.length;
+            result = sequence[index];
+            this.counters.randomInRange++;
+        }
+
+        // Ensure result is within range
+        result = Math.max(min, Math.min(max, result));
+        return this._logCall('randomInRange', [min, max], result);
+    }
+
+    randomFloat(min, max) {
+        let result;
+        if (this.fixedValues.randomFloat !== undefined) {
+            result = this.fixedValues.randomFloat;
+        } else {
+            const sequence = this.sequences.randomFloat;
+            const index = this.counters.randomFloat % sequence.length;
+            const ratio = sequence[index];
+            result = min + (max - min) * ratio;
+            this.counters.randomFloat++;
+        }
+        return this._logCall('randomFloat', [min, max], result);
+    }
+
+    randomBoolean(probability = 0.5) {
+        let result;
+        if (this.fixedValues.randomBoolean !== undefined) {
+            result = this.fixedValues.randomBoolean;
+        } else {
+            const sequence = this.sequences.randomBoolean;
+            const index = this.counters.randomBoolean % sequence.length;
+            result = sequence[index];
+            this.counters.randomBoolean++;
+        }
+        return this._logCall('randomBoolean', [probability], result);
+    }
+
+    randomChoice(array) {
+        if (!Array.isArray(array) || array.length === 0) {
+            throw new Error('randomChoice requires a non-empty array');
+        }
+        // Always return first item for predictability
+        const result = array[0];
+        return this._logCall('randomChoice', [array], result);
+    }
+
+    randomWeightedChoice(choices) {
+        // For testing, return the key with highest weight
+        let maxWeight = 0;
+        let result = Object.keys(choices)[0];
+
+        for (const [choice, weight] of Object.entries(choices)) {
+            if (weight > maxWeight) {
+                maxWeight = weight;
+                result = choice;
+            }
+        }
+
+        return this._logCall('randomWeightedChoice', [choices], result);
+    }
+
+    getHumanizedDelay(baseMs, variationPercent = 20) {
+        let result;
+        if (this.fixedValues.getHumanizedDelay !== undefined) {
+            result = this.fixedValues.getHumanizedDelay;
+        } else {
+            const sequence = this.sequences.getHumanizedDelay;
+            const index = this.counters.getHumanizedDelay % sequence.length;
+            result = sequence[index];
+            this.counters.getHumanizedDelay++;
+        }
+
+        // Ensure minimum of 50ms
+        result = Math.max(50, result);
+        return this._logCall('getHumanizedDelay', [baseMs, variationPercent], result);
+    }
+
+    randomGaussian(mean = 0, stdDev = 1) {
+        // Simple predictable implementation for testing
+        const result = mean; // Always return mean for predictability
+        return this._logCall('randomGaussian', [mean, stdDev], result);
+    }
+
+    getNaturalDelay(minMs, maxMs, peakMs = null) {
+        // Return middle value for predictability
+        const result = peakMs || Math.round((minMs + maxMs) / 2);
+        return this._logCall('getNaturalDelay', [minMs, maxMs, peakMs], result);
+    }
+
+    // Test utilities
+    getCallCount(method) {
+        return this.callLog.filter(call => call.method === method).length;
+    }
+
+    getLastCall(method) {
+        const calls = this.callLog.filter(call => call.method === method);
+        return calls[calls.length - 1];
+    }
+
+    clearCallLog() {
+        this.callLog = [];
+    }
+}
+
 class MockStateMachine {
     constructor() {
         this.context = {};
@@ -129,7 +293,8 @@ class MockPage {
 }
 
 class MockBehaviorProfile {
-    constructor(options = {}) {
+    constructor(options = {}, randomProvider = null) {
+        this.randomProvider = randomProvider || new MockRandomProvider();
         this.thinkingDelay = options.thinkingDelay || 2000;
         this.quickDecisionDelay = options.quickDecisionDelay || 600;
         this.nextProfileDelay = options.nextProfileDelay || 5000;
@@ -214,10 +379,12 @@ class MockHotkeyHandler {
 const TestHelpers = {
     // Create a complete mock context with all dependencies
     createMockContext(options = {}) {
+        const randomProvider = new MockRandomProvider();
         const context = {
             browser: new MockBrowserController(),
-            behavior: new MockBehaviorProfile(options.behavior),
-            hotkeys: new MockHotkeyHandler(options.exitRequested)
+            behavior: new MockBehaviorProfile(options.behavior, randomProvider),
+            hotkeys: new MockHotkeyHandler(options.exitRequested),
+            randomProvider: randomProvider
         };
 
         if (options.noBehavior) {
@@ -310,6 +477,7 @@ const TestHelpers = {
 };
 
 module.exports = {
+    MockRandomProvider,
     MockStateMachine,
     MockBrowserController,
     MockBehaviorProfile,

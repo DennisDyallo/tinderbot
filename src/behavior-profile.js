@@ -1,5 +1,8 @@
+const RandomProvider = require('./random-provider');
+
 class BehaviorProfile {
-    constructor() {
+    constructor(randomProvider = null) {
+        this.randomProvider = randomProvider || RandomProvider.getInstance();
         this.personality = this.selectPersonality();
         this.generateBehavior();
     }
@@ -39,22 +42,25 @@ class BehaviorProfile {
         };
 
         // Weighted selection (70% normal, 20% careful, 10% impatient)
-        const rand = Math.random();
-        if (rand < 0.1) return personalities.impatient;
-        if (rand < 0.3) return personalities.careful;
-        return personalities.normal;
+        const selectedType = this.randomProvider.randomWeightedChoice({
+            impatient: 0.1,
+            careful: 0.2,
+            normal: 0.7
+        });
+
+        return personalities[selectedType];
     }
 
     generateBehavior() {
         // Generate photo count first
-        const photoCount = this.randomInRange(this.personality.photoCount);
+        const photoCount = this.randomProvider.randomInRange(this.personality.photoCount);
 
         this.timings = {
             // Main flow timings
-            thinkingDelay: this.randomInRange(this.personality.thinking),
-            quickDecisionDelay: this.randomInRange(this.personality.quickDecision),
-            nextProfileDelay: this.randomInRange(this.personality.nextProfile),
-            finalPause: this.randomInRange([333, 666]),
+            thinkingDelay: this.randomProvider.randomInRange(this.personality.thinking),
+            quickDecisionDelay: this.randomProvider.randomInRange(this.personality.quickDecision),
+            nextProfileDelay: this.randomProvider.randomInRange(this.personality.nextProfile),
+            finalPause: this.randomProvider.randomInRange([333, 666]),
 
             // Photo viewing behavior
             photoViewing: {
@@ -64,9 +70,9 @@ class BehaviorProfile {
 
             // Mouse movement behavior
             mouseMovement: {
-                shouldMove: Math.random() < this.personality.mouseChance,
-                duration: this.randomInRange(this.personality.mouseDuration),
-                steps: this.randomInRange(this.personality.mouseSteps)
+                shouldMove: this.randomProvider.randomBoolean(this.personality.mouseChance),
+                duration: this.randomProvider.randomInRange(this.personality.mouseDuration),
+                steps: this.randomProvider.randomInRange(this.personality.mouseSteps)
             }
         };
     }
@@ -74,14 +80,9 @@ class BehaviorProfile {
     generatePhotoDelays(count) {
         const delays = [];
         for (let i = 0; i < count; i++) {
-            delays.push(this.randomInRange(this.personality.photoDelay));
+            delays.push(this.randomProvider.randomInRange(this.personality.photoDelay));
         }
         return delays;
-    }
-
-    randomInRange(range) {
-        const [min, max] = range;
-        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     // Helper methods for cleaner access
