@@ -36,31 +36,34 @@ class TinderBot {
 
                 console.log('🔍 Checking profile...');
 
+                // First, view photos to simulate human behavior
+                await this.browser.viewPhotos();
+
                 // Check if profile is recently active
                 const isRecentlyActive = await this.browser.checkForRecentlyActive();
 
                 if (isRecentlyActive) {
                     console.log('📍 Looking for Recently Active span...');
-                    console.log('✅ Found Recently Active - clicking LIKE');
+                    console.log('✅ Found Recently Active - sending LIKE');
                     const likeSuccess = await this.browser.clickLikeButton();
 
                     if (likeSuccess) {
-                        console.log('💖 LIKE button clicked successfully');
+                        console.log('💖 LIKE sent successfully');
                     } else {
-                        console.log('❌ Failed to click LIKE button - skipping profile');
+                        console.log('❌ Failed to send LIKE - sending NOPE instead');
                         const nopeSuccess = await this.browser.clickNopeButton();
                         if (nopeSuccess) {
-                            console.log('👎 NOPE button clicked as fallback');
+                            console.log('👎 NOPE sent as fallback');
                         }
                     }
                 } else {
-                    console.log('❌ Profile not recently active - clicking NOPE');
+                    console.log('❌ Profile not recently active - sending NOPE');
                     const nopeSuccess = await this.browser.clickNopeButton();
 
                     if (nopeSuccess) {
-                        console.log('👎 NOPE button clicked successfully');
+                        console.log('👎 NOPE sent successfully');
                     } else {
-                        console.log('❌ Failed to click NOPE button - profile may need manual handling');
+                        console.log('❌ Failed to send NOPE - profile may need manual handling');
                     }
                 }
 

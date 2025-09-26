@@ -158,114 +158,62 @@ class BrowserController {
   }
 
   async clickLikeButton() {
-    console.log("💖 Attempting to click LIKE button...");
-
-    const selectors = [
-      'button[class*="Bgc($c-ds-background-gamepad-sparks-like-default)"]',
-      'button svg[stroke*="sparks-like"]',
-      'button .gamepad-icon-wrapper svg[stroke="var(--color--border-sparks-like, inherit)"]',
-      'button:has(span:text-is("Like"))',
-      'button span .gamepad-icon-wrapper svg[stroke*="sparks-like"]',
-      '//*[@id="main-content"]/div[1]/div/div/div/div[1]/div/div/div[5]/div/div[4]/button',
-      'button:has(svg[stroke*="sparks-like"])',
-      'button[aria-label*="like" i]',
-      'button[data-testid*="like"]',
-      '.gamepadButtonContainer button:nth-child(4)'
-    ];
+    console.log("💖 Sending RIGHT arrow key for LIKE...");
 
     try {
-      for (let i = 0; i < selectors.length; i++) {
-        const selector = selectors[i];
-        console.log(`💝 Trying like selector ${i + 1}/${selectors.length}: ${selector}`);
-
-        try {
-          let element;
-          if (selector.startsWith('//*')) {
-            element = await this.page.locator(`xpath=${selector}`).first();
-          } else {
-            element = await this.page.locator(selector).first();
-          }
-
-          const isVisible = await element.isVisible({ timeout: 2000 });
-          const isEnabled = await element.isEnabled();
-
-          console.log(`   Like button - visible: ${isVisible}, enabled: ${isEnabled}`);
-
-          if (isVisible && isEnabled) {
-            await element.click();
-            console.log("✅ LIKE button clicked successfully!");
-            await this.delay(1000);
-            return true;
-          }
-        } catch (selectorError) {
-          console.log(`   Like selector failed: ${selectorError.message}`);
-          continue;
-        }
-      }
-
-      console.log("❌ Could not find or click LIKE button");
-      await this.takeDebugScreenshot("like-button-error");
-      return false;
+      await this.page.keyboard.press('ArrowRight');
+      console.log("✅ RIGHT arrow key pressed successfully - LIKE sent!");
+      await this.delay(1000);
+      return true;
 
     } catch (error) {
-      console.error("💥 Error clicking LIKE button:", error.message);
-      await this.takeDebugScreenshot("like-button-critical-error");
+      console.error("💥 Error pressing RIGHT arrow key:", error.message);
       return false;
     }
   }
 
   async clickNopeButton() {
-    console.log("👎 Attempting to click NOPE button...");
-
-    const selectors = [
-      'button[class*="Bgc($c-ds-background-gamepad-sparks-nope-default)"]',
-      'button svg[stroke*="sparks-nope"]',
-      'button .gamepad-icon-wrapper svg[stroke="var(--color--border-sparks-nope, inherit)"]',
-      'button:has(span:text-is("Nope"))',
-      '//*[@id="main-content"]/div[1]/div/div/div/div[1]/div/div/div[5]/div/div[2]/button',
-      'button span .gamepad-icon-wrapper svg:not([stroke*="sparks-like"])',
-      'button[aria-label*="pass" i]',
-      'button[aria-label*="nope" i]',
-      '.gamepadButtonContainer button:nth-child(2)'
-    ];
+    console.log("👎 Sending LEFT arrow key for NOPE...");
 
     try {
-      for (let i = 0; i < selectors.length; i++) {
-        const selector = selectors[i];
-        console.log(`💔 Trying nope selector ${i + 1}/${selectors.length}: ${selector}`);
-
-        try {
-          let element;
-          if (selector.startsWith('//*')) {
-            element = await this.page.locator(`xpath=${selector}`).first();
-          } else {
-            element = await this.page.locator(selector).first();
-          }
-
-          const isVisible = await element.isVisible({ timeout: 2000 });
-          const isEnabled = await element.isEnabled();
-
-          console.log(`   Nope button - visible: ${isVisible}, enabled: ${isEnabled}`);
-
-          if (isVisible && isEnabled) {
-            await element.click();
-            console.log("✅ NOPE button clicked successfully!");
-            await this.delay(1000);
-            return true;
-          }
-        } catch (selectorError) {
-          console.log(`   Nope selector failed: ${selectorError.message}`);
-          continue;
-        }
-      }
-
-      console.log("❌ Could not find or click NOPE button");
-      await this.takeDebugScreenshot("nope-button-error");
-      return false;
+      await this.page.keyboard.press('ArrowLeft');
+      console.log("✅ LEFT arrow key pressed successfully - NOPE sent!");
+      await this.delay(1000);
+      return true;
 
     } catch (error) {
-      console.error("💥 Error clicking NOPE button:", error.message);
-      await this.takeDebugScreenshot("nope-button-critical-error");
+      console.error("💥 Error pressing LEFT arrow key:", error.message);
+      return false;
+    }
+  }
+
+  async viewPhotos() {
+    console.log("📸 Viewing profile photos...");
+
+    try {
+      // Random number of photos to view (1-3)
+      const photosToView = Math.floor(Math.random() * 3) + 1;
+      console.log(`   Will view ${photosToView} photos`);
+
+      for (let i = 0; i < photosToView; i++) {
+        // Random delay between 500-3000ms
+        const delay = Math.floor(Math.random() * 2500) + 500;
+        console.log(`   📷 Photo ${i + 1}/${photosToView} - waiting ${delay}ms...`);
+
+        await this.delay(delay);
+        await this.page.keyboard.press('Space');
+        console.log(`   ✅ Spacebar pressed - next photo`);
+      }
+
+      // Final pause before decision
+      const finalDelay = Math.floor(Math.random() * 1500) + 500;
+      console.log(`   🤔 Thinking time: ${finalDelay}ms...`);
+      await this.delay(finalDelay);
+
+      return true;
+
+    } catch (error) {
+      console.error("💥 Error viewing photos:", error.message);
       return false;
     }
   }
