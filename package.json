@@ -1,0 +1,18 @@
+{
+  "name": "tinder-playwright-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "node-global-key-listener": "^0.3.0",
+    "playwright": "^1.55.1"
+  }
+}
