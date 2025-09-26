@@ -417,6 +417,60 @@ class BrowserController {
       console.log(`📸 Could not save screenshot: ${error.message}`);
     }
   }
+
+  async waitForProfilePhoto() {
+    const selectors = [
+      'div[aria-label^="Profile Photo"]',
+      'div[role="img"][aria-label*="Profile Photo"]',
+      'div.StretchedBox[aria-label^="Profile Photo"]',
+    ];
+
+    console.log('🔍 Waiting for profile photo to appear...');
+
+    const maxWaitTime = 30000; // 30 seconds
+    const checkInterval = 500; // Check every 500ms
+
+    const startTime = Date.now();
+    let attempts = 0;
+
+    while (Date.now() - startTime < maxWaitTime) {
+      attempts++;
+
+      for (let i = 0; i < selectors.length; i++) {
+        const selector = selectors[i];
+
+        try {
+          const elements = await this.page.$$(selector);
+
+          if (elements.length > 0) {
+            for (const element of elements) {
+              const isVisible = await element.isVisible();
+              const ariaLabel = await element.getAttribute('aria-label');
+
+              if (isVisible && ariaLabel && ariaLabel.includes('Profile Photo')) {
+                console.log(`✅ Profile photo found: "${ariaLabel}"`);
+                return true;
+              }
+            }
+          }
+        } catch (selectorError) {
+          continue;
+        }
+      }
+
+      // Progress feedback every 5 seconds
+      if (attempts % 10 === 0) {
+        const elapsed = Math.round((Date.now() - startTime) / 1000);
+        console.log(`   🔄 Still waiting for profile... (${elapsed}s/${maxWaitTime/1000}s)`);
+      }
+
+      await this.delay(checkInterval);
+    }
+
+    const totalTime = Math.round((Date.now() - startTime) / 1000);
+    console.log(`❌ Profile photo wait timeout after ${totalTime}s`);
+    return false;
+  }
 }
 
 module.exports = BrowserController;

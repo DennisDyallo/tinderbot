@@ -1,25 +1,127 @@
 const BrowserController = require('./browser-controller');
 const HotkeyHandler = require('./hotkey-handler');
 const BehaviorProfile = require('./behavior-profile');
+const StateMachine = require('./state-machine');
+
+// Import all state classes
+const WaitingForProfileState = require('./states/waiting-for-profile');
+const AnalyzingState = require('./states/analyzing');
+const ThinkingState = require('./states/thinking');
+const ViewingPhotosState = require('./states/viewing-photos');
+const DecidingState = require('./states/deciding');
+const LikingState = require('./states/liking');
+const NopingState = require('./states/noping');
+const IdleState = require('./states/idle');
+const ErrorState = require('./states/error');
+const ShutdownState = require('./states/shutdown');
 
 class TinderBot {
     constructor() {
         this.browser = new BrowserController();
         this.hotkeys = new HotkeyHandler();
         this.isRunning = false;
+        this.stateMachine = new StateMachine();
+        this.setupStateMachine();
+    }
+
+    setupStateMachine() {
+        // Register all states
+        this.stateMachine.registerState('WAITING_FOR_PROFILE', new WaitingForProfileState());
+        this.stateMachine.registerState('ANALYZING', new AnalyzingState());
+        this.stateMachine.registerState('THINKING', new ThinkingState());
+        this.stateMachine.registerState('VIEWING_PHOTOS', new ViewingPhotosState());
+        this.stateMachine.registerState('DECIDING', new DecidingState());
+        this.stateMachine.registerState('LIKING', new LikingState());
+        this.stateMachine.registerState('NOPING', new NopingState());
+        this.stateMachine.registerState('IDLE', new IdleState());
+        this.stateMachine.registerState('ERROR', new ErrorState());
+        this.stateMachine.registerState('SHUTDOWN', new ShutdownState());
+
+        // Define state transitions with humanized delays
+        this.stateMachine.defineTransition('WAITING_FOR_PROFILE', 'ANALYZING', {
+            delay: this.getRandomDelay(50, 200) // Human reaction delay after profile loads
+        });
+
+        this.stateMachine.defineTransition('ANALYZING', 'THINKING', {
+            delay: 0 // No delay, transition handled in Thinking state
+        });
+
+        this.stateMachine.defineTransition('ANALYZING', 'NOPING', {
+            delay: 0 // No delay, Noping state handles quick decision timing
+        });
+
+        this.stateMachine.defineTransition('THINKING', 'VIEWING_PHOTOS', {
+            delay: 0 // Thinking delay handled within Thinking state
+        });
+
+        this.stateMachine.defineTransition('VIEWING_PHOTOS', 'DECIDING', {
+            delay: 0 // Photo viewing timing handled within ViewingPhotos state
+        });
+
+        this.stateMachine.defineTransition('DECIDING', 'LIKING', {
+            delay: 0 // Final pause handled within Deciding state
+        });
+
+        this.stateMachine.defineTransition('LIKING', 'IDLE', {
+            delay: this.getRandomDelay(800, 1200) // Brief pause after action
+        });
+
+        this.stateMachine.defineTransition('NOPING', 'IDLE', {
+            delay: this.getRandomDelay(600, 1000) // Brief pause after action
+        });
+
+        this.stateMachine.defineTransition('IDLE', 'WAITING_FOR_PROFILE', {
+            delay: 0 // Next profile delay handled within Idle state
+        });
+
+        // Error recovery transitions
+        this.stateMachine.defineTransition('ERROR', 'WAITING_FOR_PROFILE', {
+            delay: 0 // Recovery delay handled within Error state
+        });
+
+        // Any state can transition to ERROR or SHUTDOWN
+        const allStates = ['WAITING_FOR_PROFILE', 'ANALYZING', 'THINKING', 'VIEWING_PHOTOS', 'DECIDING', 'LIKING', 'NOPING', 'IDLE', 'ERROR'];
+        allStates.forEach(state => {
+            this.stateMachine.defineTransition(state, 'ERROR', { delay: 0 });
+            this.stateMachine.defineTransition(state, 'SHUTDOWN', { delay: 0 });
+        });
+
+        // Set initial state
+        this.stateMachine.setInitialState('WAITING_FOR_PROFILE');
+
+        // Set up context with shared resources
+        this.stateMachine.setContext('browser', this.browser);
+        this.stateMachine.setContext('hotkeys', this.hotkeys);
+    }
+
+    getRandomDelay(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     async start() {
         try {
             console.log('🤖 Tinder Bot Starting...');
             console.log('📝 Press CTRL+ESC to stop');
-            
+
             await this.browser.initialize();
             await this.browser.waitForProfileIcon();
-            
+
+            // Generate behavior profile and add to context
+            try {
+                const behavior = new BehaviorProfile();
+                behavior.logBehavior();
+                this.stateMachine.setContext('behavior', behavior);
+            } catch (behaviorError) {
+                console.error('❌ Failed to create behavior profile:', behaviorError.message);
+                console.log('🔄 Continuing without behavior profile - using fallbacks...');
+                this.stateMachine.setContext('behavior', null);
+            }
+
             this.isRunning = true;
-            await this.mainLoop();
-            
+
+            // Start the state machine
+            await this.stateMachine.start();
+
         } catch (error) {
             console.error('❌ Fatal error:', error.message);
         } finally {
@@ -27,93 +129,17 @@ class TinderBot {
         }
     }
 
-    async mainLoop() {
-        console.log('🔄 Starting main loop...');
-        
-        while (this.isRunning && !this.hotkeys.isExitRequested()) {
-            try {
-                // Generate behavior profile for this interaction
-                let behavior;
-                try {
-                    behavior = new BehaviorProfile();
-                    behavior.logBehavior(); // Debug info
-                } catch (behaviorError) {
-                    console.error('❌ Failed to create behavior profile:', behaviorError.message);
-                    console.log('🔄 Continuing with fallback behavior...');
-                    behavior = null; // Will trigger fallback in viewPhotos
-                }
-
-                console.log('🔍 Checking new profile...');
-
-                // FIRST: Check if profile is recently active
-                const isRecentlyActive = await this.browser.checkForRecentlyActive();
-
-                if (isRecentlyActive) {
-                    console.log('✅ Found Recently Active - viewing photos');
-
-                    // Wait a bit before viewing photos (using behavior profile or fallback)
-                    const thinkingDelay = behavior ? behavior.getThinkingDelay() : Math.floor(Math.random() * 2000) + 1000;
-                    console.log(`   🤔 Thinking for ${Math.round(thinkingDelay/1000)}s...`);
-                    await this.delay(thinkingDelay);
-
-                    // View photos with centralized behavior (fallback handled in viewPhotos)
-                    await this.browser.viewPhotos(behavior);
-
-                    // Final pause before like
-                    console.log('   ⏳ Final decision moment...');
-                    const finalPause = behavior ? behavior.getFinalPause() : 300;
-                    await this.delay(finalPause);
-
-                    console.log('💖 Sending LIKE');
-                    const likeSuccess = await this.browser.clickLikeButton();
-
-                    if (likeSuccess) {
-                        console.log('✅ LIKE sent successfully');
-                    } else {
-                        console.log('❌ Failed to send LIKE - sending NOPE instead');
-                        const nopeSuccess = await this.browser.clickNopeButton();
-                        if (nopeSuccess) {
-                            console.log('👎 NOPE sent as fallback');
-                        }
-                    }
-                } else {
-                    console.log('❌ Profile not recently active - sending quick NOPE');
-
-                    // Quick decision using behavior profile or fallback
-                    const quickDelay = behavior ? behavior.getQuickDecisionDelay() : Math.floor(Math.random() * 500) + 300;
-                    console.log(`   ⚡ Quick decision in ${quickDelay}ms...`);
-                    await this.delay(quickDelay);
-
-                    const nopeSuccess = await this.browser.clickNopeButton();
-
-                    if (nopeSuccess) {
-                        console.log('👎 NOPE sent successfully');
-                    } else {
-                        console.log('❌ Failed to send NOPE - profile may need manual handling');
-                    }
-                }
-
-                // Wait before next profile using behavior profile or fallback
-                const nextProfileDelay = behavior ? behavior.getNextProfileDelay() : Math.floor(Math.random() * 5000) + 3000;
-                console.log(`⏳ Waiting ${Math.round(nextProfileDelay/1000)}s for next profile...`);
-                await this.delay(nextProfileDelay);
-
-            } catch (error) {
-                console.error('⚠️  Loop error:', error.message);
-                await this.delay(3000); // Recovery pause
-            }
-        }
-        
-        console.log('🏁 Main loop ended');
-    }
-
-    async delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
 
     async cleanup() {
         console.log('🧹 Cleaning up...');
         this.isRunning = false;
+
+        // Stop state machine if running
+        if (this.stateMachine) {
+            this.stateMachine.stop();
+        }
+
+        // Cleanup is also handled by the SHUTDOWN state, but we'll do it here as backup
         await this.browser.cleanup();
         this.hotkeys.cleanup();
         console.log('✅ Cleanup complete');
