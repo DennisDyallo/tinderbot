@@ -1,0 +1,103 @@
+<!-- Decline Add to homescreen dialog -->
+<!-- GOAL: Detect and interact with the "Add to homescreen" dialog. Decline by clicking the "Not interested" button -->
+<!-- CURRENT STATE: This dialog is not being detected, causing unexpected behavior of our app -->
+<!-- REMARKS: This dialog might appear randomly after a new profile has been presented -->
+<!-- SUGGESTION TO CLAUDE: Use the button with text Not interested as a selector. It is also the last button in 
+     the dialog -->
+
+<div
+  aria-labelledby=":rc:"
+  class="Ovy(h) Ta(c) Bgc($c-ds-background-primary) Bdrs(8px) W(100%) Miw(300px) W(300px)--ml M(10px) M(0)--s Ovy(s)--sm Ovy(h)--md Mah(100vh)--sm Mah(a)--md Jc(fs)"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="Bgc($c-ds-background-secondary) Pos(r)">
+    <div class="Pt(20px)">
+      <div class="Pt(8px)">
+        <span
+          class="Sq(60px) Bxsh($bxsh-btn) Bgc($c-ds-background-button-primary-overlay) P(8px) Bdrs(50%) CenterAlign Mx(a)"
+          ><svg
+            focusable="false"
+            aria-hidden="true"
+            role="presentation"
+            viewBox="0 0 24 24"
+            width="24px"
+            height="24px"
+            class="Expand"
+          >
+            <path
+              d="M8.21 10.08c-.02 0-.04 0-.06-.02-.67-.9-.84-2.44-.89-3.03 0-.11-.13-.18-.23-.12C4.93 8.08 3 10.86 3 13.54 3 18.14 6.2 22 11.7 22c5.15 0 8.7-3.98 8.7-8.46 0-5.87-4.2-9.77-7.93-11.53a.13.13 0 0 0-.19.14c.48 3.16-.18 6.6-4.07 7.93z"
+              fill="var(--fill--background-brand-gradient, none)"
+              fill-rule="nonzero"
+            ></path></svg
+        ></span>
+      </div>
+    </div>
+    <div class="Pt(12px) Pb(20px) Px(60px)--ml Px(24px)">
+      <h1
+        class="Fz($m) Fw($semibold) W(100%) C($c-ds-text-primary) Pt(20px) Pb(4px)"
+        id=":rc:"
+      >
+        Add Tinder to your Home Screen
+      </h1>
+      <div class="Fz($s) C($c-ds-text-secondary)">
+        <div class="C($c-ds-text-primary) Pb(12px)">
+          Get Tinder easily and quickly by adding it to your Home Screen
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="Pt(12px) Pb(8px) Px(36px)--ml Px(24px)">
+    <button
+      data-testid="addToHomeScreen"
+      class="c1p6lbu0 My(20px)--ml Mb(10px)--s W(100%) D(b)"
+      type="button"
+      style="
+        --tui-button-background: var(
+          --color--background-button-primary,
+          inherit
+        );
+        --tui-button-border: transparent;
+        --tui-button-foreground: var(
+          --color--foreground-button-primary,
+          inherit
+        );
+        --tui-button-overlay: var(--color--interactive-button-primary, inherit);
+        --tui-button-focus: var(--color--border-focus-default, inherit);
+      "
+    >
+      <div class="tg0j2fo"></div>
+      <div class="w1u9t036">
+        <span class="cxdzch5 f1xhyo4z"></span>
+        <div class="cxdzch5 f17p5q9z"></div>
+        <div class="c9iqosj"><div class="lxn9zzn">Add</div></div>
+        <span class="cxdzch5 o14gki62"></span>
+      </div></button
+    ><button
+      class="c1p6lbu0 D(b) Mx(a)"
+      data-size="large"
+      type="button"
+      style="
+        --tui-button-background: transparent;
+        --tui-button-border: transparent;
+        --tui-button-foreground: var(
+          --color--foreground-button-tertiary,
+          inherit
+        );
+        --tui-button-overlay: var(
+          --color--interactive-button-tertiary,
+          inherit
+        );
+        --tui-button-focus: var(--color--border-focus-default, inherit);
+      "
+    >
+      <div class="tg0j2fo"></div>
+      <div class="w1u9t036">
+        <span class="cxdzch5 f1xhyo4z"></span>
+        <div class="cxdzch5 f17p5q9z"></div>
+        <div class="c9iqosj"><div class="lxn9zzn">Not interested</div></div>
+        <span class="cxdzch5 o14gki62"></span>
+      </div>
+    </button>
+  </div>
+</div>

@@ -1,4 +1,10 @@
-// HTML
+<!-- Decline Super Like Dialog -->
+<!-- GOAL: Detect and interact with the "Upgrade Your Like!" dialog. Decline by clicking the "No Thanks" button -->
+<!-- CURRENT STATE: This dialog is not being detected, causing unexpected behavior of our app -->
+<!-- REMARKS: This dialog appears randomly after a new profile has been presented -->
+<!-- SUGGESTION TO CLAUDE: Use the button with text No Thanks as a selector. It is also the last button in 
+     the dialog -->
+
 <div
   aria-labelledby=":r4t:"
   class="Ovy(h) Ta(c) Bgc($c-ds-background-primary) Bdrs(8px) CenterAlign Fxd(c) W(100%) Maw($desktop-modal-width)--ml Pos(r) Z(0) M(10px) M(0)--s Py(36px) Px(44px) Py(12px)--s Px(20px)--s Ovy(s)--sm Ovy(h)--md Mah(100vh)--sm Mah(a)--md Jc(fs)"
@@ -87,6 +93,3 @@
     </div>
   </button>
 </div>
-
-// JSPath
-document.querySelector("#s223848403 > div > div > button.c1p6lbu0.D\\(b\\).My\\(20px\\).Mx\\(a\\)")
