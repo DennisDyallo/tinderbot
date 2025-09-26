@@ -33,8 +33,15 @@ class TinderBot {
         while (this.isRunning && !this.hotkeys.isExitRequested()) {
             try {
                 // Generate behavior profile for this interaction
-                const behavior = new BehaviorProfile();
-                behavior.logBehavior(); // Debug info
+                let behavior;
+                try {
+                    behavior = new BehaviorProfile();
+                    behavior.logBehavior(); // Debug info
+                } catch (behaviorError) {
+                    console.error('❌ Failed to create behavior profile:', behaviorError.message);
+                    console.log('🔄 Continuing with fallback behavior...');
+                    behavior = null; // Will trigger fallback in viewPhotos
+                }
 
                 console.log('🔍 Checking new profile...');
 
@@ -44,17 +51,18 @@ class TinderBot {
                 if (isRecentlyActive) {
                     console.log('✅ Found Recently Active - viewing photos');
 
-                    // Wait a bit before viewing photos (using behavior profile)
-                    const thinkingDelay = behavior.getThinkingDelay();
+                    // Wait a bit before viewing photos (using behavior profile or fallback)
+                    const thinkingDelay = behavior ? behavior.getThinkingDelay() : Math.floor(Math.random() * 2000) + 1000;
                     console.log(`   🤔 Thinking for ${Math.round(thinkingDelay/1000)}s...`);
                     await this.delay(thinkingDelay);
 
-                    // View photos with centralized behavior
+                    // View photos with centralized behavior (fallback handled in viewPhotos)
                     await this.browser.viewPhotos(behavior);
 
                     // Final pause before like
                     console.log('   ⏳ Final decision moment...');
-                    await this.delay(behavior.getFinalPause());
+                    const finalPause = behavior ? behavior.getFinalPause() : 300;
+                    await this.delay(finalPause);
 
                     console.log('💖 Sending LIKE');
                     const likeSuccess = await this.browser.clickLikeButton();
@@ -71,8 +79,8 @@ class TinderBot {
                 } else {
                     console.log('❌ Profile not recently active - sending quick NOPE');
 
-                    // Quick decision using behavior profile
-                    const quickDelay = behavior.getQuickDecisionDelay();
+                    // Quick decision using behavior profile or fallback
+                    const quickDelay = behavior ? behavior.getQuickDecisionDelay() : Math.floor(Math.random() * 500) + 300;
                     console.log(`   ⚡ Quick decision in ${quickDelay}ms...`);
                     await this.delay(quickDelay);
 
@@ -85,8 +93,8 @@ class TinderBot {
                     }
                 }
 
-                // Wait before next profile using behavior profile
-                const nextProfileDelay = behavior.getNextProfileDelay();
+                // Wait before next profile using behavior profile or fallback
+                const nextProfileDelay = behavior ? behavior.getNextProfileDelay() : Math.floor(Math.random() * 5000) + 3000;
                 console.log(`⏳ Waiting ${Math.round(nextProfileDelay/1000)}s for next profile...`);
                 await this.delay(nextProfileDelay);
 

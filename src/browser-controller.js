@@ -283,18 +283,32 @@ class BrowserController {
     console.log("📸 Viewing profile photos...");
 
     try {
+      // Check if behavior parameter is provided
+      if (!behavior) {
+        console.error("❌ No behavior profile provided to viewPhotos()");
+        // Fallback to simple photo viewing
+        return await this.viewPhotosSimple();
+      }
+
       const photoData = behavior.getPhotoViewingBehavior();
+
+      // Additional safety check
+      if (!photoData || !photoData.delays) {
+        console.error("❌ Invalid photo behavior data");
+        return await this.viewPhotosSimple();
+      }
+
       console.log(`   Will view ${photoData.count} photos`);
 
       for (let i = 0; i < photoData.count; i++) {
-        const delay = photoData.delays[i];
+        const delay = photoData.delays[i] || 1000; // Fallback delay
         console.log(`   📷 Photo ${i + 1}/${photoData.count} - waiting ${delay}ms...`);
 
         await this.delay(delay);
 
         // Mouse movement based on behavior profile
         const mouseData = behavior.getMouseMovementBehavior();
-        if (mouseData.shouldMove) {
+        if (mouseData && mouseData.shouldMove) {
           await this.randomMouseMove(mouseData);
         }
 
@@ -306,12 +320,43 @@ class BrowserController {
 
     } catch (error) {
       console.error("💥 Error viewing photos:", error.message);
+      console.log("🔄 Falling back to simple photo viewing");
+      return await this.viewPhotosSimple();
+    }
+  }
+
+  async viewPhotosSimple() {
+    console.log("📸 Simple photo viewing (fallback)...");
+
+    try {
+      // Simple fallback: view 1-3 photos with random delays
+      const count = Math.floor(Math.random() * 3) + 1;
+      console.log(`   Will view ${count} photos (simple mode)`);
+
+      for (let i = 0; i < count; i++) {
+        const delay = Math.floor(Math.random() * 2500) + 500;
+        console.log(`   📷 Photo ${i + 1}/${count} - waiting ${delay}ms...`);
+
+        await this.delay(delay);
+        await this.page.keyboard.press('Space');
+        console.log(`   ✅ Spacebar pressed - next photo`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error("💥 Even simple photo viewing failed:", error.message);
       return false;
     }
   }
 
   async randomMouseMove(mouseData) {
     try {
+      // Safety check for mouseData parameter
+      if (!mouseData) {
+        console.log(`   🖱️  No mouse data provided, skipping mouse movement`);
+        return;
+      }
+
       // Get viewport size
       const viewport = this.page.viewportSize();
       const width = viewport ? viewport.width : 1200;
@@ -327,9 +372,9 @@ class BrowserController {
 
       console.log(`   🖱️  Smoothly moving mouse to (${targetX}, ${targetY})`);
 
-      // Use centralized timing from behavior profile
-      const totalDuration = mouseData.duration;
-      const steps = mouseData.steps;
+      // Use centralized timing from behavior profile with fallbacks
+      const totalDuration = mouseData.duration || 1500;
+      const steps = mouseData.steps || 15;
       const stepDelay = Math.floor(totalDuration / steps);
 
       const deltaX = (targetX - startX) / steps;
