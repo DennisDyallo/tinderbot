@@ -12,17 +12,27 @@ class BrowserController {
   }
 
   async initialize() {
+    console.log("🔧 BrowserController initializing...");
     await this.lifecycleManager.initialize();
 
     const page = this.lifecycleManager.getPage();
+    console.log("🔧 Page object from lifecycle manager:", page ? "✅ Available" : "❌ NULL/UNDEFINED");
+
     if (!page) {
       throw new Error("Browser initialization failed - no page available");
     }
 
     // Initialize components with the page
+    console.log("🔧 Initializing ProfileDetector...");
     this.profileDetector = new ProfileDetector(page);
+
+    console.log("🔧 Initializing UserInteractionHandler...");
     this.interactionHandler = new UserInteractionHandler(page);
+
+    console.log("🔧 Initializing DialogManager...");
     this.dialogManager = new DialogManager(page);
+
+    console.log("✅ BrowserController initialization complete");
   }
 
   // Profile detection methods - delegate to ProfileDetector
@@ -63,16 +73,20 @@ class BrowserController {
   }
 
   async viewPhotos(behavior) {
+    console.log("🔧 BrowserController.viewPhotos() called");
     if (!this.interactionHandler) {
       throw new Error("UserInteractionHandler not initialized");
     }
+    console.log("🔧 Delegating to interactionHandler.viewPhotos()");
     return await this.interactionHandler.viewPhotos(behavior);
   }
 
   async performMouseMovement(behavior) {
+    console.log("🔧 BrowserController.performMouseMovement() called");
     if (!this.interactionHandler) {
       throw new Error("UserInteractionHandler not initialized");
     }
+    console.log("🔧 Delegating to interactionHandler.performMouseMovement()");
     return await this.interactionHandler.performMouseMovement(behavior);
   }
 
@@ -86,7 +100,11 @@ class BrowserController {
 
   // Lifecycle management methods - delegate to BrowserLifecycleManager
   async cleanup() {
-    await this.lifecycleManager.cleanup();
+    try {
+      await this.lifecycleManager.cleanup();
+    } catch (error) {
+      console.error("⚠️  BrowserController cleanup error:", error.message);
+    }
   }
 
   // Utility methods

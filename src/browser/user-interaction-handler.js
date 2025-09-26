@@ -1,6 +1,12 @@
 class UserInteractionHandler {
   constructor(page) {
+    console.log("🔧 UserInteractionHandler constructor - page:", page ? "✅ Available" : "❌ NULL/UNDEFINED");
     this.page = page;
+    if (!this.page) {
+      console.error("❌ UserInteractionHandler: page is null/undefined!");
+    } else {
+      console.log("✅ UserInteractionHandler initialized with valid page");
+    }
   }
 
   async clickLikeButton() {
@@ -43,12 +49,14 @@ class UserInteractionHandler {
     }
 
     console.log(`📸 Viewing ${count} photos with delays: [${delays.join(', ')}ms]`);
+    console.log("🔧 Checking page object for photo viewing:", this.page ? "✅ Available" : "❌ NULL/UNDEFINED");
 
     try {
       for (let i = 0; i < count; i++) {
         console.log(`   📷 Viewing photo ${i + 1}/${count}...`);
 
         // Press spacebar to view next photo
+        console.log("🔧 Calling this.page.keyboard.press('Space')...");
         await this.page.keyboard.press("Space");
 
         // Wait for the specified delay for this photo
@@ -76,19 +84,28 @@ class UserInteractionHandler {
 
     const { duration, steps } = behavior.mouseMovement;
     console.log(`🖱️  Performing smooth mouse movement (${duration}ms, ${steps} steps)`);
+    console.log("🔧 Checking page object:", this.page ? "✅ Available" : "❌ NULL/UNDEFINED");
 
     try {
+      let width, height;
+
+      console.log("🔧 Calling this.page.viewportSize()...");
       const viewport = this.page.viewportSize();
       if (!viewport) {
-        console.log("⚠️  Could not get viewport size - skipping mouse movement");
-        return true;
+        console.log("⚠️  Could not get viewport size - using default size");
+        // Use default viewport size
+        width = 1200;
+        height = 800;
+      } else {
+        width = viewport.width;
+        height = viewport.height;
       }
 
       // Generate random target position
-      const startX = Math.floor(viewport.width * 0.3);
-      const startY = Math.floor(viewport.height * 0.4);
-      const endX = Math.floor(viewport.width * (0.4 + Math.random() * 0.3));
-      const endY = Math.floor(viewport.height * (0.3 + Math.random() * 0.4));
+      const startX = Math.floor(width * 0.3);
+      const startY = Math.floor(height * 0.4);
+      const endX = Math.floor(width * (0.4 + Math.random() * 0.3));
+      const endY = Math.floor(height * (0.3 + Math.random() * 0.4));
 
       console.log(`   🎯 Moving from (${startX}, ${startY}) to (${endX}, ${endY})`);
 

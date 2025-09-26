@@ -148,6 +148,7 @@ class BrowserLifecycleManager {
   }
 
   getPage() {
+    console.log("🔧 BrowserLifecycleManager.getPage() called - page:", this.page ? "✅ Available" : "❌ NULL/UNDEFINED");
     return this.page;
   }
 
