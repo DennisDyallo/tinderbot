@@ -115,6 +115,7 @@ class DOMInspector {
   }
 
   async injectInspectionScript() {
+    // First inject for future page loads
     await this.page.addInitScript(() => {
       // Prevent multiple injection
       if (window.domInspectorInjected) return;
@@ -244,8 +245,7 @@ class DOMInspector {
 
       // Mouse over highlighting
       document.addEventListener('mouseover', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        // Don't prevent default behavior - let events work normally
 
         // Remove previous highlight
         if (highlightedElement) {
@@ -259,8 +259,7 @@ class DOMInspector {
 
       // Click event listener
       document.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        // Don't prevent default behavior - let events work normally
 
         const elementInfo = getElementInfo(e.target);
 
@@ -286,7 +285,7 @@ ${elementInfo.selectors.slice(0, 5).map(s => `║   ${s}`).join('\n')}
 ╚══════════════════════════════════════════════════════════════════
         `);
 
-        return false;
+        // Let the event continue normally
       }, true);
 
       // Keyboard shortcut to toggle monitoring
@@ -298,6 +297,182 @@ ${elementInfo.selectors.slice(0, 5).map(s => `║   ${s}`).join('\n')}
       });
 
       originalLog('🎯 DOM Inspector injected! Click on elements to see their information.');
+    });
+
+    // Also inject directly into the current page (for already loaded pages)
+    await this.page.evaluate(() => {
+      // Prevent multiple injection
+      if (window.domInspectorInjected) return;
+      window.domInspectorInjected = true;
+
+      // Store original console.info to avoid interference
+      const originalLog = console.info;
+
+      // Element highlighting style
+      const highlightStyle = `
+        outline: 3px solid #ff6b6b !important;
+        outline-offset: 2px !important;
+        background-color: rgba(255, 107, 107, 0.1) !important;
+      `;
+
+      let highlightedElement = null;
+
+      // Function to get comprehensive element info
+      function getElementInfo(element) {
+        const rect = element.getBoundingClientRect();
+        const computedStyle = window.getComputedStyle(element);
+
+        // Generate multiple selector options
+        const selectors = [];
+
+        // ID selector
+        if (element.id) {
+          selectors.push(`#${element.id}`);
+        }
+
+        // Class selectors
+        if (element.className && typeof element.className === 'string') {
+          const classes = element.className.trim().split(/\s+/).filter(c => c);
+          if (classes.length > 0) {
+            selectors.push(`.${classes.join('.')}`);
+            // Single class selectors
+            classes.forEach(cls => selectors.push(`.${cls}`));
+          }
+        }
+
+        // Attribute selectors
+        for (let attr of element.attributes) {
+          if (attr.name !== 'class' && attr.name !== 'id') {
+            selectors.push(`[${attr.name}="${attr.value}"]`);
+            selectors.push(`[${attr.name}]`);
+          }
+        }
+
+        // Tag selector
+        selectors.push(element.tagName.toLowerCase());
+
+        // Text-based selectors
+        const textContent = element.textContent?.trim();
+        if (textContent && textContent.length < 50) {
+          selectors.push(`text="${textContent}"`);
+          selectors.push(`text*="${textContent.substring(0, 20)}"`);
+        }
+
+        // Aria label selectors
+        const ariaLabel = element.getAttribute('aria-label');
+        if (ariaLabel) {
+          selectors.push(`[aria-label="${ariaLabel}"]`);
+        }
+
+        // Data attribute selectors
+        for (let attr of element.attributes) {
+          if (attr.name.startsWith('data-')) {
+            selectors.push(`[${attr.name}="${attr.value}"]`);
+          }
+        }
+
+        // CSS path
+        function getCSSPath(el) {
+          const path = [];
+          while (el && el.nodeType === Node.ELEMENT_NODE) {
+            let selector = el.nodeName.toLowerCase();
+            if (el.id) {
+              selector += '#' + el.id;
+              path.unshift(selector);
+              break;
+            } else {
+              let sib = el;
+              let nth = 1;
+              while (sib = sib.previousElementSibling) {
+                if (sib.nodeName.toLowerCase() === selector) nth++;
+              }
+              if (nth !== 1) selector += `:nth-of-type(${nth})`;
+            }
+            path.unshift(selector);
+            el = el.parentNode;
+          }
+          return path.join(' > ');
+        }
+
+        return {
+          tagName: element.tagName,
+          id: element.id || null,
+          className: element.className || null,
+          textContent: textContent?.substring(0, 100) || null,
+          innerHTML: element.innerHTML?.substring(0, 200) || null,
+          attributes: Array.from(element.attributes).map(attr => ({
+            name: attr.name,
+            value: attr.value
+          })),
+          selectors: [...new Set(selectors)], // Remove duplicates
+          cssPath: getCSSPath(element),
+          position: {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height
+          },
+          visibility: {
+            visible: rect.width > 0 && rect.height > 0,
+            display: computedStyle.display,
+            visibility: computedStyle.visibility,
+            opacity: computedStyle.opacity
+          },
+          parentInfo: element.parentElement ? {
+            tagName: element.parentElement.tagName,
+            id: element.parentElement.id || null,
+            className: element.parentElement.className || null
+          } : null,
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      // Mouse over highlighting
+      document.addEventListener('mouseover', (e) => {
+        // Don't prevent default behavior - let events work normally
+
+        // Remove previous highlight
+        if (highlightedElement) {
+          highlightedElement.style.cssText = highlightedElement.style.cssText.replace(highlightStyle, '');
+        }
+
+        // Add new highlight
+        highlightedElement = e.target;
+        highlightedElement.style.cssText += highlightStyle;
+      }, true);
+
+      // Click event listener
+      document.addEventListener('click', (e) => {
+        // Don't prevent default behavior - let events work normally
+
+        const elementInfo = getElementInfo(e.target);
+
+        // Log with special prefix for easy filtering
+        originalLog('🎯 DOM_INSPECTOR_CLICK:', JSON.stringify(elementInfo, null, 2));
+
+        // Also create a more readable summary
+        originalLog(`
+╔══════════════════════════════════════════════════════════════════
+║ 🎯 ELEMENT CLICKED
+╠══════════════════════════════════════════════════════════════════
+║ Tag: ${elementInfo.tagName}
+║ Text: ${elementInfo.textContent || 'N/A'}
+║ ID: ${elementInfo.id || 'N/A'}
+║ Classes: ${elementInfo.className || 'N/A'}
+║
+║ 🎯 TOP SELECTORS:
+${elementInfo.selectors.slice(0, 5).map(s => `║   ${s}`).join('\n')}
+║
+║ 📍 CSS Path: ${elementInfo.cssPath}
+║
+║ 📊 Position: ${elementInfo.position.x}, ${elementInfo.position.y} (${elementInfo.position.width}x${elementInfo.position.height})
+╚══════════════════════════════════════════════════════════════════
+        `);
+
+        // Let the event continue normally
+      }, true);
+
+      originalLog('🎯 DOM Inspector injected into current page! Click on elements to see their information.');
     });
 
     // Listen for console messages from the page

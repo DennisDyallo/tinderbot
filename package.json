@@ -10,7 +10,9 @@
     "test:unit": "jest test/unit",
     "test:states": "jest test/unit/states",
     "test:verbose": "jest --verbose",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "browser": "node start-browser.js",
+    "inspect": "node inspect-dom.js"
   },
   "keywords": [],
   "author": "",
