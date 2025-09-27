@@ -23,12 +23,12 @@ class BaseState {
 
     async onEnter(data = {}) {
         // Override in subclasses
-        console.log(`🟢 Entering ${this.name} state`);
+        logger.log(`STATE: Entering ${this.name} state`);
     }
 
     async onExit(data = {}) {
         // Override in subclasses
-        console.log(`🔴 Exiting ${this.name} state`);
+        logger.log(`STATE: Exiting ${this.name} state`);
     }
 
     async execute() {
@@ -76,11 +76,11 @@ class BaseState {
             try {
                 const dialogDismissed = await browser.dismissDialogs();
                 if (dialogDismissed) {
-                    console.log('🧹 Dialog dismissed - continuing state execution');
+                    logger.log('Dialog dismissed - continuing state execution');
                 }
                 return dialogDismissed;
             } catch (error) {
-                console.log(`⚠️  Dialog check failed: ${error.message}`);
+                logger.log(`Dialog check failed: ${error.message}`);
                 return false;
             }
         }

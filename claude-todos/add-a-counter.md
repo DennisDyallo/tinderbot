@@ -1,0 +1,1 @@
+It would be nice for debugging purposes to have a counter that shows how many profiles have been processed, how many were liked, and how many were noped. This could be displayed in the console output.

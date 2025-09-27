@@ -99,8 +99,8 @@ class TinderBot {
 
     async start() {
         try {
-            console.log('🤖 Tinder Bot Starting...');
-            console.log('📝 Press CTRL+ESC to stop');
+            logger.log('🤖 Tinder Bot Starting...');
+            logger.log('📝 Press CTRL+ESC to stop');
 
             await this.browser.initialize();
             await this.browser.waitForProfileIcon();
@@ -111,8 +111,8 @@ class TinderBot {
                 behavior.logBehavior();
                 this.stateMachine.setContext('behavior', behavior);
             } catch (behaviorError) {
-                console.error('❌ Failed to create behavior profile:', behaviorError.message);
-                console.log('🔄 Continuing without behavior profile - using fallbacks...');
+                logger.error('❌ Failed to create behavior profile:', behaviorError.message);
+                logger.log('🔄 Continuing without behavior profile - using fallbacks...');
                 this.stateMachine.setContext('behavior', null);
             }
 
@@ -122,7 +122,7 @@ class TinderBot {
             await this.stateMachine.start();
 
         } catch (error) {
-            console.error('❌ Fatal error:', error.message);
+            logger.error('❌ Fatal error:', error.message);
         } finally {
             await this.cleanup();
         }
@@ -130,7 +130,7 @@ class TinderBot {
 
 
     async cleanup() {
-        console.log('🧹 Cleaning up...');
+        logger.log('🧹 Cleaning up...');
         this.isRunning = false;
 
         // Stop state machine if running
@@ -141,7 +141,7 @@ class TinderBot {
         // Cleanup is also handled by the SHUTDOWN state, but we'll do it here as backup
         await this.browser.cleanup();
         this.hotkeys.cleanup();
-        console.log('✅ Cleanup complete');
+        logger.log('✅ Cleanup complete');
     }
 }
 

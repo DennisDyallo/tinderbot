@@ -58,8 +58,8 @@ describe('BrowserLifecycleManager', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
-    console.log.mockRestore();
-    console.error.mockRestore();
+    logger.log.mockRestore();
+    logger.error.mockRestore();
   });
 
   describe('constructor', () => {

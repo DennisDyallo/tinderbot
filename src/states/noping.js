@@ -12,9 +12,9 @@ class NopingState extends BaseState {
         this.setContext('transitionData', data);
 
         if (data.quickDecision) {
-            console.log('👎 Sending quick NOPE (not recently active)...');
+            logger.log('👎 Sending quick NOPE (not recently active)...');
         } else {
-            console.log('👎 Sending NOPE...');
+            logger.log('👎 Sending NOPE...');
         }
     }
 
@@ -38,18 +38,18 @@ class NopingState extends BaseState {
                 if (behavior) {
                     quickDelay = behavior.getQuickDecisionDelay();
                 } else {
-                    console.log('⚠️  No behavior profile available - using fallback quick delay');
+                    logger.log('⚠️  No behavior profile available - using fallback quick delay');
                     quickDelay = this.getHumanizedDelay(550, 45); // ~300-800ms with variation
                 }
 
-                console.log(`   ⚡ Quick decision delay: ${quickDelay}ms`);
+                logger.log(`   ⚡ Quick decision delay: ${quickDelay}ms`);
                 await this.delay(quickDelay);
             }
 
             const nopeSuccess = await browser.clickNopeButton();
 
             if (nopeSuccess) {
-                console.log('✅ NOPE sent successfully');
+                logger.log('✅ NOPE sent successfully');
 
                 // Track profile completion for behavior evolution
                 const behavior = this.getBehavior();
@@ -59,12 +59,12 @@ class NopingState extends BaseState {
 
                 return { nextState: 'IDLE' };
             } else {
-                console.log('❌ Failed to send NOPE');
+                logger.log('❌ Failed to send NOPE');
                 return { nextState: 'ERROR', data: { error: 'Nope action failed' } };
             }
 
         } catch (error) {
-            console.error('💥 Error sending NOPE:', error.message);
+            logger.error('💥 Error sending NOPE:', error.message);
             return { nextState: 'ERROR', data: { error } };
         }
     }

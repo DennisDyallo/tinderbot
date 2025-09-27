@@ -11,13 +11,13 @@ class BrowserLifecycleManager {
   }
 
   async initialize() {
-    console.log("🥷 Launching persistent browser...");
+    logger.log("🥷 Launching persistent browser...");
 
     try {
       // Ensure user data directory exists
       if (!fs.existsSync(this.userDataDir)) {
         fs.mkdirSync(this.userDataDir, { recursive: true });
-        console.log("📁 Created browser data directory");
+        logger.log("📁 Created browser data directory");
       }
 
       // Try to launch persistent context (reuses existing session)
@@ -35,27 +35,27 @@ class BrowserLifecycleManager {
         timezoneId: "Europe/Stockholm",
       });
 
-      console.log("✅ Persistent browser context launched");
+      logger.log("✅ Persistent browser context launched");
 
       // Get existing pages or create new one
       const pages = this.context.pages();
       if (pages.length > 0) {
         this.page = pages[0];
-        console.log("🔄 Reusing existing browser tab");
+        logger.log("🔄 Reusing existing browser tab");
 
         // Check if already on Tinder
         const currentUrl = this.page.url();
         if (!currentUrl.includes('tinder.com')) {
-          console.log("🌐 Navigating to Tinder...");
+          logger.log("🌐 Navigating to Tinder...");
           await this.page.goto("https://tinder.com/app/recs", {
             waitUntil: "domcontentloaded",
           });
         } else {
-          console.log("✅ Already on Tinder - session maintained!");
+          logger.log("✅ Already on Tinder - session maintained!");
         }
       } else {
         this.page = await this.context.newPage();
-        console.log("📄 Created new browser tab");
+        logger.log("📄 Created new browser tab");
 
         await this.page.goto("https://tinder.com/app/recs", {
           waitUntil: "domcontentloaded",
@@ -65,11 +65,11 @@ class BrowserLifecycleManager {
       // Essential anti-detection script
       await this.addAntiDetectionScript();
 
-      console.log("👤 Persistent browser ready");
+      logger.log("👤 Persistent browser ready");
 
     } catch (error) {
-      console.error("❌ Failed to launch persistent browser:", error.message);
-      console.log("🔄 Falling back to regular browser...");
+      logger.error("❌ Failed to launch persistent browser:", error.message);
+      logger.log("🔄 Falling back to regular browser...");
       await this.fallbackToRegularBrowser();
     }
   }
@@ -94,7 +94,7 @@ class BrowserLifecycleManager {
   }
 
   async fallbackToRegularBrowser() {
-    console.log("🔄 Starting regular browser fallback...");
+    logger.log("🔄 Starting regular browser fallback...");
 
     try {
       this.browser = await chromium.launch({
@@ -122,10 +122,10 @@ class BrowserLifecycleManager {
         waitUntil: "domcontentloaded",
       });
 
-      console.log("✅ Fallback browser launched successfully");
+      logger.log("✅ Fallback browser launched successfully");
 
     } catch (fallbackError) {
-      console.error("💥 Fallback browser also failed:", fallbackError.message);
+      logger.error("💥 Fallback browser also failed:", fallbackError.message);
       throw new Error("Both persistent and regular browser failed to launch");
     }
   }
@@ -135,20 +135,20 @@ class BrowserLifecycleManager {
       if (this.context) {
         // For persistent context, just close without destroying user data
         await this.context.close();
-        console.log("🔒 Browser context closed (data preserved)");
+        logger.log("🔒 Browser context closed (data preserved)");
       }
 
       if (this.browser) {
         await this.browser.close();
-        console.log("🔒 Browser closed");
+        logger.log("🔒 Browser closed");
       }
     } catch (error) {
-      console.error("⚠️  Browser cleanup error:", error.message);
+      logger.error("⚠️  Browser cleanup error:", error.message);
     }
   }
 
   getPage() {
-    console.log("🔧 BrowserLifecycleManager.getPage() called - page:", this.page ? "✅ Available" : "❌ NULL/UNDEFINED");
+    logger.log("🔧 BrowserLifecycleManager.getPage() called - page:", this.page ? "✅ Available" : "❌ NULL/UNDEFINED");
     return this.page;
   }
 

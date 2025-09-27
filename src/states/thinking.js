@@ -7,7 +7,7 @@ class ThinkingState extends BaseState {
 
     async onEnter(data = {}) {
         await super.onEnter(data);
-        console.log('🤔 Thinking about this recently active profile...');
+        logger.log(' Thinking about this recently active profile...');
     }
 
     async execute() {
@@ -26,18 +26,18 @@ class ThinkingState extends BaseState {
             if (behavior) {
                 thinkingDelay = behavior.getThinkingDelay();
             } else {
-                console.log('⚠️  No behavior profile available - using fallback thinking delay');
+                logger.debug('⚠️  No behavior profile available - using fallback thinking delay');
                 thinkingDelay = this.getHumanizedDelay(2000, 50); // 1-3s with variation
             }
 
-            console.log(`   💭 Thinking for ${Math.round(thinkingDelay/1000)}s...`);
+            logger.log(`    Thinking for ${Math.round(thinkingDelay/1000)}s...`);
             await this.delay(thinkingDelay);
 
-            console.log('✅ Decision made - time to view photos');
+            logger.debug(' Decision made - time to view photos');
             return { nextState: 'VIEWING_PHOTOS' };
 
         } catch (error) {
-            console.error('💥 Error during thinking phase:', error.message);
+            logger.error('💥 Error during thinking phase:', error.message);
             return { nextState: 'ERROR', data: { error } };
         }
     }

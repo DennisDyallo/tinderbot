@@ -42,7 +42,7 @@ class StateMachine {
         const transition = this.transitionMatrix.get(transitionKey);
 
         if (!transition && this.currentState !== null) {
-            console.warn(`⚠️  No defined transition from '${this.currentState}' to '${newState}' - allowing anyway`);
+            logger.warn(`⚠️  No defined transition from '${this.currentState}' to '${newState}' - allowing anyway`);
         }
 
         // Execute exit logic of current state
@@ -53,7 +53,7 @@ class StateMachine {
 
         // Apply transition delay if defined
         if (transition && transition.delay > 0) {
-            console.log(`⏳ Transition delay: ${transition.delay}ms (${this.currentState} → ${newState})`);
+            logger.log(`⏳ Transition delay: ${transition.delay}ms (${this.currentState} → ${newState})`);
             await this.delay(transition.delay);
         }
 
@@ -65,7 +65,7 @@ class StateMachine {
         const previousState = this.currentState;
         this.currentState = newState;
 
-        console.log(`🔄 State: ${previousState || 'NONE'} → ${newState}`);
+        logger.state(`🔄 State: ${previousState || 'NONE'} → ${newState}`);
 
         // Execute enter logic of new state
         const newStateInstance = this.states.get(newState);
@@ -80,7 +80,7 @@ class StateMachine {
         this.isRunning = true;
         this.shouldStop = false;
 
-        console.log(`🤖 State machine starting in state: ${this.currentState}`);
+        logger.log(`🤖 State machine starting in state: ${this.currentState}`);
 
         // Enter initial state
         const initialStateInstance = this.states.get(this.currentState);
@@ -96,21 +96,21 @@ class StateMachine {
                 if (result && result.nextState) {
                     await this.transitionTo(result.nextState, result.data || {});
                 } else if (result && result.error) {
-                    console.error('❌ State execution error:', result.error);
+                    logger.error('❌ State execution error:', result.error);
                     await this.transitionTo('ERROR', { error: result.error });
                 }
 
             } catch (error) {
-                console.error('💥 State machine error:', error.message);
+                logger.error('💥 State machine error:', error.message);
                 await this.transitionTo('ERROR', { error });
             }
         }
 
-        console.log('🏁 State machine stopped');
+        logger.log('🏁 State machine stopped');
     }
 
     stop() {
-        console.log('🛑 Stopping state machine...');
+        logger.log('🛑 Stopping state machine...');
         this.shouldStop = true;
     }
 
@@ -138,9 +138,9 @@ class StateMachine {
 
     // Debug method to log all registered states and transitions
     logConfiguration() {
-        console.log('📋 State Machine Configuration:');
-        console.log('   States:', Array.from(this.states.keys()));
-        console.log('   Transitions:', Array.from(this.transitionMatrix.keys()));
+        logger.log('📋 State Machine Configuration:');
+        logger.log('   States:', Array.from(this.states.keys()));
+        logger.log('   Transitions:', Array.from(this.transitionMatrix.keys()));
     }
 }
 

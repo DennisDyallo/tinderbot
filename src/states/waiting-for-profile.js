@@ -9,7 +9,7 @@ class WaitingForProfileState extends BaseState {
 
     async onEnter(data = {}) {
         await super.onEnter(data);
-        console.log('⏳ Waiting for first profile to load...');
+        logger.log('⏳ Waiting for first profile to load...');
     }
 
     async execute() {
@@ -26,21 +26,21 @@ class WaitingForProfileState extends BaseState {
             const profileFound = await browser.waitForProfilePhoto();
 
             if (profileFound) {
-                console.log('✅ Profile loaded - ready to analyze');
+                logger.log(' Profile loaded - ready to analyze');
 
                 // Add small human reaction delay after profile loads
                 const reactionDelay = this.getHumanizedDelay(125, 60); // 50-200ms with variation
-                console.log(`   😌 Human reaction delay: ${reactionDelay}ms`);
+                logger.log(`     Human reaction delay: ${reactionDelay}ms`);
                 await this.delay(reactionDelay);
 
                 return { nextState: 'ANALYZING' };
             } else {
-                console.log('❌ Profile loading timeout - retrying');
+                logger.log('  Profile loading timeout - retrying');
                 return { nextState: 'ERROR', data: { error: 'Profile loading timeout' } };
             }
 
         } catch (error) {
-            console.error('💥 Error waiting for profile:', error.message);
+            logger.error('💥 Error waiting for profile:', error.message);
             return { nextState: 'ERROR', data: { error } };
         }
     }

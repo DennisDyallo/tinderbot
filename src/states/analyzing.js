@@ -7,7 +7,7 @@ class AnalyzingState extends BaseState {
 
     async onEnter(data = {}) {
         await super.onEnter(data);
-        console.log('🔍 Analyzing profile for Recently Active status...');
+        logger.log('🔍 Analyzing profile for Recently Active status...');
     }
 
     async execute() {
@@ -27,15 +27,15 @@ class AnalyzingState extends BaseState {
             const isRecentlyActive = await browser.checkForRecentlyActive();
 
             if (isRecentlyActive) {
-                console.log('✅ Profile is Recently Active - proceeding to think');
+                logger.log('Profile is Recently Active - proceeding to think');
                 return { nextState: 'THINKING', data: { isRecentlyActive: true } };
             } else {
-                console.log('❌ Profile not Recently Active - will send quick nope');
+                logger.log('Profile not Recently Active - will send quick nope');
                 return { nextState: 'NOPING', data: { isRecentlyActive: false, quickDecision: true } };
             }
 
         } catch (error) {
-            console.error('💥 Error analyzing profile:', error.message);
+            logger.error('💥 Error analyzing profile:', error.message);
             return { nextState: 'ERROR', data: { error } };
         }
     }

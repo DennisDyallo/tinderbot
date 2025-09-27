@@ -1,98 +1,98 @@
 class UserInteractionHandler {
   constructor(page) {
-    console.log("🔧 UserInteractionHandler constructor - page:", page ? "✅ Available" : "❌ NULL/UNDEFINED");
+    logger.log("🔧 UserInteractionHandler constructor - page:", page ? "✅ Available" : "❌ NULL/UNDEFINED");
     this.page = page;
     if (!this.page) {
-      console.error("❌ UserInteractionHandler: page is null/undefined!");
+      logger.error("❌ UserInteractionHandler: page is null/undefined!");
     } else {
-      console.log("✅ UserInteractionHandler initialized with valid page");
+      logger.log("✅ UserInteractionHandler initialized with valid page");
     }
   }
 
   async clickLikeButton() {
-    console.log("💖 Pressing right arrow to send LIKE...");
+    logger.log("💖 Pressing right arrow to send LIKE...");
 
     try {
       await this.page.keyboard.press("ArrowRight");
-      console.log("✅ Right arrow pressed (LIKE sent)");
+      logger.log("✅ Right arrow pressed (LIKE sent)");
       return true;
     } catch (error) {
-      console.error("❌ Failed to press right arrow:", error.message);
+      logger.error("❌ Failed to press right arrow:", error.message);
       return false;
     }
   }
 
   async clickNopeButton() {
-    console.log("👎 Pressing left arrow to send NOPE...");
+    logger.log("👎 Pressing left arrow to send NOPE...");
 
     try {
       await this.page.keyboard.press("ArrowLeft");
-      console.log("✅ Left arrow pressed (NOPE sent)");
+      logger.log("✅ Left arrow pressed (NOPE sent)");
       return true;
     } catch (error) {
-      console.error("❌ Failed to press left arrow:", error.message);
+      logger.error("❌ Failed to press left arrow:", error.message);
       return false;
     }
   }
 
   async viewPhotos(behavior) {
     if (!behavior || !behavior.photoViewing) {
-      console.log("⚠️  No photo viewing behavior provided - skipping photos");
+      logger.log("⚠️  No photo viewing behavior provided - skipping photos");
       return true;
     }
 
     const { count, delays } = behavior.photoViewing;
 
     if (count === 0) {
-      console.log("📸 Skipping photo viewing (count: 0)");
+      logger.log("📸 Skipping photo viewing (count: 0)");
       return true;
     }
 
-    console.log(`📸 Viewing ${count} photos with delays: [${delays.join(', ')}ms]`);
-    console.log("🔧 Checking page object for photo viewing:", this.page ? "✅ Available" : "❌ NULL/UNDEFINED");
+    logger.log(`📸 Viewing ${count} photos with delays: [${delays.join(', ')}ms]`);
+    logger.log("🔧 Checking page object for photo viewing:", this.page ? "✅ Available" : "❌ NULL/UNDEFINED");
 
     try {
       for (let i = 0; i < count; i++) {
-        console.log(`   📷 Viewing photo ${i + 1}/${count}...`);
+        logger.log(`   📷 Viewing photo ${i + 1}/${count}...`);
 
         // Press spacebar to view next photo
-        console.log("🔧 Calling this.page.keyboard.press('Space')...");
+        logger.log("🔧 Calling this.page.keyboard.press('Space')...");
         await this.page.keyboard.press("Space");
 
         // Wait for the specified delay for this photo
         if (i < delays.length) {
           const delay = delays[i];
-          console.log(`   ⏳ Viewing delay: ${delay}ms`);
+          logger.log(`   ⏳ Viewing delay: ${delay}ms`);
           await this.delay(delay);
         }
       }
 
-      console.log("✅ Photo viewing completed");
+      logger.log("✅ Photo viewing completed");
       return true;
 
     } catch (error) {
-      console.error("❌ Error during photo viewing:", error.message);
+      logger.error("❌ Error during photo viewing:", error.message);
       return false;
     }
   }
 
   async performMouseMovement(behavior) {
     if (!behavior || !behavior.mouseMovement || !behavior.mouseMovement.shouldMove) {
-      console.log("🖱️  Skipping mouse movement");
+      logger.log("🖱️  Skipping mouse movement");
       return true;
     }
 
     const { duration, steps } = behavior.mouseMovement;
-    console.log(`🖱️  Performing smooth mouse movement (${duration}ms, ${steps} steps)`);
-    console.log("🔧 Checking page object:", this.page ? "✅ Available" : "❌ NULL/UNDEFINED");
+    logger.log(`🖱️  Performing smooth mouse movement (${duration}ms, ${steps} steps)`);
+    logger.log("🔧 Checking page object:", this.page ? "✅ Available" : "❌ NULL/UNDEFINED");
 
     try {
       let width, height;
 
-      console.log("🔧 Calling this.page.viewportSize()...");
+      logger.log("🔧 Calling this.page.viewportSize()...");
       const viewport = this.page.viewportSize();
       if (!viewport) {
-        console.log("⚠️  Could not get viewport size - using default size");
+        logger.log("⚠️  Could not get viewport size - using default size");
         // Use default viewport size
         width = 1200;
         height = 800;
@@ -107,7 +107,7 @@ class UserInteractionHandler {
       const endX = Math.floor(width * (0.4 + Math.random() * 0.3));
       const endY = Math.floor(height * (0.3 + Math.random() * 0.4));
 
-      console.log(`   🎯 Moving from (${startX}, ${startY}) to (${endX}, ${endY})`);
+      logger.log(`   🎯 Moving from (${startX}, ${startY}) to (${endX}, ${endY})`);
 
       // Move to start position
       await this.page.mouse.move(startX, startY);
@@ -124,11 +124,11 @@ class UserInteractionHandler {
         await this.delay(stepDuration);
       }
 
-      console.log("✅ Mouse movement completed");
+      logger.log("✅ Mouse movement completed");
       return true;
 
     } catch (error) {
-      console.log(`   🖱️  Mouse move failed: ${error.message}`);
+      logger.log(`   🖱️  Mouse move failed: ${error.message}`);
       return false;
     }
   }
