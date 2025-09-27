@@ -7,7 +7,7 @@ class LikingState extends BaseState {
 
     async onEnter(data = {}) {
         await super.onEnter(data);
-        logger.log('💖 Sending LIKE...');
+        logger.info('💖 Sending LIKE...');
     }
 
     async execute() {
@@ -24,7 +24,7 @@ class LikingState extends BaseState {
             const likeSuccess = await browser.clickLikeButton();
 
             if (likeSuccess) {
-                logger.log('✅ LIKE sent successfully');
+                logger.info('✅ LIKE sent successfully');
 
                 // Track profile completion for behavior evolution
                 const behavior = this.getBehavior();
@@ -34,7 +34,7 @@ class LikingState extends BaseState {
 
                 return { nextState: 'IDLE' };
             } else {
-                logger.log('❌ Failed to send LIKE');
+                logger.info('❌ Failed to send LIKE');
                 return { nextState: 'ERROR', data: { error: 'Like action failed' } };
             }
 

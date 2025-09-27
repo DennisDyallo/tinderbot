@@ -12,9 +12,9 @@ class NopingState extends BaseState {
         this.setContext('transitionData', data);
 
         if (data.quickDecision) {
-            logger.log('👎 Sending quick NOPE (not recently active)...');
+            logger.info('👎 Sending quick NOPE (not recently active)...');
         } else {
-            logger.log('👎 Sending NOPE...');
+            logger.info('👎 Sending NOPE...');
         }
     }
 
@@ -38,18 +38,18 @@ class NopingState extends BaseState {
                 if (behavior) {
                     quickDelay = behavior.getQuickDecisionDelay();
                 } else {
-                    logger.log('⚠️  No behavior profile available - using fallback quick delay');
+                    logger.info('⚠️  No behavior profile available - using fallback quick delay');
                     quickDelay = this.getHumanizedDelay(550, 45); // ~300-800ms with variation
                 }
 
-                logger.log(`   ⚡ Quick decision delay: ${quickDelay}ms`);
+                logger.info(`   ⚡ Quick decision delay: ${quickDelay}ms`);
                 await this.delay(quickDelay);
             }
 
             const nopeSuccess = await browser.clickNopeButton();
 
             if (nopeSuccess) {
-                logger.log('✅ NOPE sent successfully');
+                logger.info('✅ NOPE sent successfully');
 
                 // Track profile completion for behavior evolution
                 const behavior = this.getBehavior();
@@ -59,7 +59,7 @@ class NopingState extends BaseState {
 
                 return { nextState: 'IDLE' };
             } else {
-                logger.log('❌ Failed to send NOPE');
+                logger.info('❌ Failed to send NOPE');
                 return { nextState: 'ERROR', data: { error: 'Nope action failed' } };
             }
 

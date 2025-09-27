@@ -66,7 +66,7 @@ describe('BrowserController', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
-    logger.log.mockRestore();
+    logger.info.mockRestore();
     logger.error.mockRestore();
   });
 

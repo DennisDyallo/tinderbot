@@ -4,7 +4,7 @@ class DialogManager {
   }
 
   async dismissDialogs() {
-    logger.log("🔍 Checking for popup dialogs...");
+    logger.info("🔍 Checking for popup dialogs...");
 
     try {
       // Check for Add to Home Screen dialog
@@ -24,7 +24,7 @@ class DialogManager {
       return homeScreenDialog || superLikeDialog;
 
     } catch (error) {
-      logger.log(`⚠️  Dialog dismissal failed: ${error.message}`);
+      logger.info(`⚠️  Dialog dismissal failed: ${error.message}`);
       return false;
     }
   }
@@ -39,13 +39,13 @@ class DialogManager {
       const isVisible = await dialog.isVisible();
       if (!isVisible) return false;
 
-      logger.log(`🚨 Found ${dialogType} dialog - dismissing...`);
+      logger.info(`🚨 Found ${dialogType} dialog - dismissing...`);
 
       // Find and click dismiss button
       const dismissButton = await this.page.$(dismissButtonSelector);
       if (dismissButton && await dismissButton.isVisible()) {
         await dismissButton.click();
-        logger.log(`✅ ${dialogType} dialog dismissed`);
+        logger.info(`✅ ${dialogType} dialog dismissed`);
 
         // Wait for dialog to disappear
         await this.page.waitForSelector(dialogSelector, {
@@ -55,12 +55,12 @@ class DialogManager {
 
         return true;
       } else {
-        logger.log(`⚠️  ${dialogType} dialog found but dismiss button not found`);
+        logger.info(`⚠️  ${dialogType} dialog found but dismiss button not found`);
         return false;
       }
 
     } catch (error) {
-      logger.log(`⚠️  Error handling ${dialogType} dialog: ${error.message}`);
+      logger.info(`⚠️  Error handling ${dialogType} dialog: ${error.message}`);
       return false;
     }
   }
@@ -81,7 +81,7 @@ class DialogManager {
 
     const config = dialogConfigs[dialogType];
     if (!config) {
-      logger.log(`⚠️  Unknown dialog type: ${dialogType}`);
+      logger.info(`⚠️  Unknown dialog type: ${dialogType}`);
       return false;
     }
 
@@ -91,7 +91,7 @@ class DialogManager {
       for (const dialog of dialogs) {
         const isVisible = await dialog.isVisible();
         if (isVisible && config.identifier(dialog)) {
-          logger.log(`🚨 Found ${dialogType} dialog`);
+          logger.info(`🚨 Found ${dialogType} dialog`);
           return true;
         }
       }
@@ -99,7 +99,7 @@ class DialogManager {
       return false;
 
     } catch (error) {
-      logger.log(`⚠️  Error checking for ${dialogType} dialog: ${error.message}`);
+      logger.info(`⚠️  Error checking for ${dialogType} dialog: ${error.message}`);
       return false;
     }
   }
@@ -126,12 +126,12 @@ class DialogManager {
       const dismissButton = await this.page.$(config.dismissSelector);
       if (dismissButton && await dismissButton.isVisible()) {
         await dismissButton.click();
-        logger.log(`✅ ${config.name} dialog dismissed`);
+        logger.info(`✅ ${config.name} dialog dismissed`);
         return true;
       }
       return false;
     } catch (error) {
-      logger.log(`⚠️  Error dismissing ${config.name} dialog: ${error.message}`);
+      logger.info(`⚠️  Error dismissing ${config.name} dialog: ${error.message}`);
       return false;
     }
   }

@@ -4,7 +4,7 @@ class ProfileDetector {
   }
 
   async checkForRecentlyActive() {
-    logger.log("🔍 Checking profile for Recently Active status...");
+    logger.info("🔍 Checking profile for Recently Active status...");
 
     // First check for the green dot indicator (most reliable)
     const dotSelector = 'div[class*="Bgc($c-ds-background-badge-online-now-default)"]';
@@ -12,11 +12,11 @@ class ProfileDetector {
     try {
       const greenDot = await this.page.$(dotSelector);
       if (greenDot && await greenDot.isVisible()) {
-        logger.log("✅ Found Recently Active - green dot indicator detected!");
+        logger.info("✅ Found Recently Active - green dot indicator detected!");
         return true;
       }
     } catch (error) {
-      logger.log(`   Green dot check failed: ${error.message}`);
+      logger.info(`   Green dot check failed: ${error.message}`);
     }
 
     // Fallback to text-based detection
@@ -31,29 +31,29 @@ class ProfileDetector {
     try {
       for (let i = 0; i < textSelectors.length; i++) {
         const selector = textSelectors[i];
-        logger.log(`📍 Trying text selector ${i + 1}/${textSelectors.length}: ${selector}`);
+        logger.info(`📍 Trying text selector ${i + 1}/${textSelectors.length}: ${selector}`);
 
         try {
           const elements = await this.page.$$(selector);
-          logger.log(`   Found ${elements.length} elements with this selector`);
+          logger.info(`   Found ${elements.length} elements with this selector`);
 
           for (const element of elements) {
             const textContent = await element.textContent();
             const isVisible = await element.isVisible();
-            logger.log(`   Element text: "${textContent}", visible: ${isVisible}`);
+            logger.info(`   Element text: "${textContent}", visible: ${isVisible}`);
 
             if (textContent && textContent.includes("Recently Active") && isVisible) {
-              logger.log(`✅ Found Recently Active - text detection using selector: ${selector}`);
+              logger.info(`✅ Found Recently Active - text detection using selector: ${selector}`);
               return true;
             }
           }
         } catch (selectorError) {
-          logger.log(`   Selector failed: ${selectorError.message}`);
+          logger.info(`   Selector failed: ${selectorError.message}`);
           continue;
         }
       }
 
-      logger.log("❌ Recently Active not found - profile not recently active");
+      logger.info("❌ Recently Active not found - profile not recently active");
       return false;
 
     } catch (error) {
@@ -72,7 +72,7 @@ class ProfileDetector {
       'div.StretchedBox[role="img"]' // Fallback for StretchedBox images
     ];
 
-    logger.log('🔍 Waiting for profile photo to appear...');
+    logger.info('🔍 Waiting for profile photo to appear...');
 
     const maxWaitTime = 30000; // 30 seconds
     const checkInterval = 500; // Check every 500ms
@@ -95,7 +95,7 @@ class ProfileDetector {
               const ariaLabel = await element.getAttribute('aria-label');
 
               if (isVisible && ariaLabel && ariaLabel.includes('Profile Photo')) {
-                logger.log(`✅ Profile photo found: "${ariaLabel}" using selector: ${selector}`);
+                logger.info(`✅ Profile photo found: "${ariaLabel}" using selector: ${selector}`);
                 return true;
               }
             }
@@ -108,19 +108,19 @@ class ProfileDetector {
       // Progress feedback every 5 seconds
       if (attempts % 10 === 0) {
         const elapsed = Math.round((Date.now() - startTime) / 1000);
-        logger.log(`   🔄 Still waiting for profile... (${elapsed}s/${maxWaitTime/1000}s)`);
+        logger.info(`   🔄 Still waiting for profile... (${elapsed}s/${maxWaitTime/1000}s)`);
       }
 
       await this.delay(checkInterval);
     }
 
     const totalTime = Math.round((Date.now() - startTime) / 1000);
-    logger.log(`❌ Profile photo wait timeout after ${totalTime}s`);
+    logger.info(`❌ Profile photo wait timeout after ${totalTime}s`);
     return false;
   }
 
   async waitForProfileIcon() {
-    logger.log("🔍 Waiting for profile icon (login verification)...");
+    logger.info("🔍 Waiting for profile icon (login verification)...");
 
     const selectors = [
       'button[data-testid="profile-icon"]',
@@ -138,7 +138,7 @@ class ProfileDetector {
         try {
           const element = await this.page.$(selector);
           if (element && await element.isVisible()) {
-            logger.log("✅ Profile icon found - login verified");
+            logger.info("✅ Profile icon found - login verified");
             return true;
           }
         } catch (error) {
@@ -150,11 +150,11 @@ class ProfileDetector {
 
       const elapsed = Math.round((Date.now() - startTime) / 1000);
       if (elapsed % 5 === 0 && elapsed > 0) {
-        logger.log(`   ⏳ Still waiting for login... (${elapsed}s)`);
+        logger.info(`   ⏳ Still waiting for login... (${elapsed}s)`);
       }
     }
 
-    logger.log("❌ Profile icon not found - login may be required");
+    logger.info("❌ Profile icon not found - login may be required");
     return false;
   }
 
@@ -166,9 +166,9 @@ class ProfileDetector {
         path: fullFilename,
         fullPage: false
       });
-      logger.log(`📸 Debug screenshot saved: ${fullFilename}`);
+      logger.info(`📸 Debug screenshot saved: ${fullFilename}`);
     } catch (error) {
-      logger.log(`📸 Could not save screenshot: ${error.message}`);
+      logger.info(`📸 Could not save screenshot: ${error.message}`);
     }
   }
 

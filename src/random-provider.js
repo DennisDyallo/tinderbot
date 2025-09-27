@@ -75,8 +75,8 @@ class RandomProvider {
             u2 = this.random();
         } while (u1 === 0); // Converting [0,1) to (0,1)
 
-        const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-        const z1 = Math.sqrt(-2 * Math.log(u1)) * Math.sin(2 * Math.PI * u2);
+        const z0 = Math.sqrt(-2 * Math.info(u1)) * Math.cos(2 * Math.PI * u2);
+        const z1 = Math.sqrt(-2 * Math.info(u1)) * Math.sin(2 * Math.PI * u2);
 
         this.nextGaussian = z1;
         return z0 * stdDev + mean;

@@ -4,6 +4,8 @@ const BehaviorProfile = require('./behavior-profile');
 const StateMachine = require('./state-machine');
 const RandomProvider = require('./random-provider');
 
+require('./logger');
+
 // Import all state classes
 const WaitingForProfileState = require('./states/waiting-for-profile');
 const AnalyzingState = require('./states/analyzing');
@@ -99,8 +101,8 @@ class TinderBot {
 
     async start() {
         try {
-            logger.log('🤖 Tinder Bot Starting...');
-            logger.log('📝 Press CTRL+ESC to stop');
+            logger.info('🤖 Tinder Bot Starting...');
+            logger.info('📝 Press CTRL+ESC to stop');
 
             await this.browser.initialize();
             await this.browser.waitForProfileIcon();
@@ -108,11 +110,11 @@ class TinderBot {
             // Generate behavior profile and add to context
             try {
                 const behavior = new BehaviorProfile(this.randomProvider);
-                behavior.logBehavior();
+                behavior.infoBehavior();
                 this.stateMachine.setContext('behavior', behavior);
             } catch (behaviorError) {
                 logger.error('❌ Failed to create behavior profile:', behaviorError.message);
-                logger.log('🔄 Continuing without behavior profile - using fallbacks...');
+                logger.info('🔄 Continuing without behavior profile - using fallbacks...');
                 this.stateMachine.setContext('behavior', null);
             }
 
@@ -130,7 +132,7 @@ class TinderBot {
 
 
     async cleanup() {
-        logger.log('🧹 Cleaning up...');
+        logger.info('🧹 Cleaning up...');
         this.isRunning = false;
 
         // Stop state machine if running
@@ -141,7 +143,7 @@ class TinderBot {
         // Cleanup is also handled by the SHUTDOWN state, but we'll do it here as backup
         await this.browser.cleanup();
         this.hotkeys.cleanup();
-        logger.log('✅ Cleanup complete');
+        logger.info('✅ Cleanup complete');
     }
 }
 

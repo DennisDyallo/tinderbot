@@ -12,27 +12,27 @@ class BrowserController {
   }
 
   async initialize() {
-    logger.log("🔧 BrowserController initializing...");
+    logger.info("🔧 BrowserController initializing...");
     await this.lifecycleManager.initialize();
 
     const page = this.lifecycleManager.getPage();
-    logger.log("🔧 Page object from lifecycle manager:", page ? "✅ Available" : "❌ NULL/UNDEFINED");
+    logger.info("🔧 Page object from lifecycle manager:", page ? "✅ Available" : "❌ NULL/UNDEFINED");
 
     if (!page) {
       throw new Error("Browser initialization failed - no page available");
     }
 
     // Initialize components with the page
-    logger.log("🔧 Initializing ProfileDetector...");
+    logger.info("🔧 Initializing ProfileDetector...");
     this.profileDetector = new ProfileDetector(page);
 
-    logger.log("🔧 Initializing UserInteractionHandler...");
+    logger.info("🔧 Initializing UserInteractionHandler...");
     this.interactionHandler = new UserInteractionHandler(page);
 
-    logger.log("🔧 Initializing DialogManager...");
+    logger.info("🔧 Initializing DialogManager...");
     this.dialogManager = new DialogManager(page);
 
-    logger.log("✅ BrowserController initialization complete");
+    logger.info("✅ BrowserController initialization complete");
   }
 
   // Profile detection methods - delegate to ProfileDetector
@@ -73,20 +73,20 @@ class BrowserController {
   }
 
   async viewPhotos(behavior) {
-    logger.log("🔧 BrowserController.viewPhotos() called");
+    logger.info("🔧 BrowserController.viewPhotos() called");
     if (!this.interactionHandler) {
       throw new Error("UserInteractionHandler not initialized");
     }
-    logger.log("🔧 Delegating to interactionHandler.viewPhotos()");
+    logger.info("🔧 Delegating to interactionHandler.viewPhotos()");
     return await this.interactionHandler.viewPhotos(behavior);
   }
 
   async performMouseMovement(behavior) {
-    logger.log("🔧 BrowserController.performMouseMovement() called");
+    logger.info("🔧 BrowserController.performMouseMovement() called");
     if (!this.interactionHandler) {
       throw new Error("UserInteractionHandler not initialized");
     }
-    logger.log("🔧 Delegating to interactionHandler.performMouseMovement()");
+    logger.info("🔧 Delegating to interactionHandler.performMouseMovement()");
     return await this.interactionHandler.performMouseMovement(behavior);
   }
 

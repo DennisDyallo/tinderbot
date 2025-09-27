@@ -7,7 +7,7 @@ class ViewingPhotosState extends BaseState {
 
     async onEnter(data = {}) {
         await super.onEnter(data);
-        logger.log(' Starting to view profile photos...');
+        logger.info(' Starting to view profile photos...');
     }
 
     async execute() {
@@ -34,32 +34,32 @@ class ViewingPhotosState extends BaseState {
                 mouseData = behavior.getMouseMovementBehavior();
 
                 if (!photoData || !photoData.delays) {
-                    logger.log('⚠️  Invalid behavior photo data - using fallback');
+                    logger.info('⚠️  Invalid behavior photo data - using fallback');
                     photoData = this.getFallbackPhotoData();
                 }
             } else {
-                logger.log('⚠️  No behavior profile available - using fallback photo viewing');
+                logger.info('⚠️  No behavior profile available - using fallback photo viewing');
                 photoData = this.getFallbackPhotoData();
                 mouseData = null;
             }
 
-            logger.log(`   Will view ${photoData.count} photos`);
+            logger.info(`   Will view ${photoData.count} photos`);
 
             // Use the refactored browser controller methods
             const viewPhotosSuccess = await browser.viewPhotos(behavior);
             if (!viewPhotosSuccess) {
-                logger.log('⚠️  Photo viewing failed - continuing anyway');
+                logger.info('⚠️  Photo viewing failed - continuing anyway');
             }
 
             // Perform optional mouse movement
             if (mouseData && mouseData.shouldMove) {
                 const mouseSuccess = await browser.performMouseMovement(behavior);
                 if (!mouseSuccess) {
-                    logger.log('⚠️  Mouse movement failed - continuing anyway');
+                    logger.info('⚠️  Mouse movement failed - continuing anyway');
                 }
             }
 
-            logger.log(' Photo viewing complete - ready to decide');
+            logger.info(' Photo viewing complete - ready to decide');
             return { nextState: 'DECIDING' };
 
         } catch (error) {

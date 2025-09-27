@@ -247,7 +247,7 @@ describe('BaseState', () => {
 
 // Helper function to create Jest test environment if not available
 if (typeof describe === 'undefined') {
-    logger.log('Jest test environment not detected. This file requires Jest to run.');
-    logger.log('Install Jest with: npm install --save-dev jest');
-    logger.log('Run tests with: npm test');
+    logger.info('Jest test environment not detected. This file requires Jest to run.');
+    logger.info('Install Jest with: npm install --save-dev jest');
+    logger.info('Run tests with: npm test');
 }

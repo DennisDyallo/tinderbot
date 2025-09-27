@@ -53,7 +53,7 @@ class StateMachine {
 
         // Apply transition delay if defined
         if (transition && transition.delay > 0) {
-            logger.log(`⏳ Transition delay: ${transition.delay}ms (${this.currentState} → ${newState})`);
+            logger.info(`⏳ Transition delay: ${transition.delay}ms (${this.currentState} → ${newState})`);
             await this.delay(transition.delay);
         }
 
@@ -80,7 +80,7 @@ class StateMachine {
         this.isRunning = true;
         this.shouldStop = false;
 
-        logger.log(`🤖 State machine starting in state: ${this.currentState}`);
+        logger.info(`🤖 State machine starting in state: ${this.currentState}`);
 
         // Enter initial state
         const initialStateInstance = this.states.get(this.currentState);
@@ -106,11 +106,11 @@ class StateMachine {
             }
         }
 
-        logger.log('🏁 State machine stopped');
+        logger.info('🏁 State machine stopped');
     }
 
     stop() {
-        logger.log('🛑 Stopping state machine...');
+        logger.info('🛑 Stopping state machine...');
         this.shouldStop = true;
     }
 
@@ -138,9 +138,9 @@ class StateMachine {
 
     // Debug method to log all registered states and transitions
     logConfiguration() {
-        logger.log('📋 State Machine Configuration:');
-        logger.log('   States:', Array.from(this.states.keys()));
-        logger.log('   Transitions:', Array.from(this.transitionMatrix.keys()));
+        logger.info('📋 State Machine Configuration:');
+        logger.info('   States:', Array.from(this.states.keys()));
+        logger.info('   Transitions:', Array.from(this.transitionMatrix.keys()));
     }
 }
 

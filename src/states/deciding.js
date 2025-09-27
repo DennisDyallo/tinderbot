@@ -7,7 +7,7 @@ class DecidingState extends BaseState {
 
     async onEnter(data = {}) {
         await super.onEnter(data);
-        logger.log('⏳ Final decision moment...');
+        logger.info('⏳ Final decision moment...');
     }
 
     async execute() {
@@ -23,14 +23,14 @@ class DecidingState extends BaseState {
             if (behavior) {
                 finalPause = behavior.getFinalPause();
             } else {
-                logger.log('⚠️  No behavior profile available - using fallback final pause');
+                logger.info('⚠️  No behavior profile available - using fallback final pause');
                 finalPause = this.getHumanizedDelay(333, 40); // ~200-450ms with variation
             }
 
-            logger.log(`   Final pause: ${finalPause}ms`);
+            logger.info(`   Final pause: ${finalPause}ms`);
             await this.delay(finalPause);
 
-            logger.log(' Decision made - sending LIKE');
+            logger.info(' Decision made - sending LIKE');
             return { nextState: 'LIKING' };
 
         } catch (error) {

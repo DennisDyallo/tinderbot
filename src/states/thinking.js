@@ -7,7 +7,7 @@ class ThinkingState extends BaseState {
 
     async onEnter(data = {}) {
         await super.onEnter(data);
-        logger.log(' Thinking about this recently active profile...');
+        logger.info(' Thinking about this recently active profile...');
     }
 
     async execute() {
@@ -30,7 +30,7 @@ class ThinkingState extends BaseState {
                 thinkingDelay = this.getHumanizedDelay(2000, 50); // 1-3s with variation
             }
 
-            logger.log(`    Thinking for ${Math.round(thinkingDelay/1000)}s...`);
+            logger.info(`    Thinking for ${Math.round(thinkingDelay/1000)}s...`);
             await this.delay(thinkingDelay);
 
             logger.debug(' Decision made - time to view photos');

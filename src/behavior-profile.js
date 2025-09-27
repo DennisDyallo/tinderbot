@@ -119,7 +119,7 @@ class BehaviorProfile {
 
     // Apply subtle variations to make behavior less predictable
     applyBehaviorVariation() {
-        logger.log(`🔄 Applying behavior variation (profile ${this.profileCount})`);
+        logger.info(`🔄 Applying behavior variation (profile ${this.profileCount})`);
 
         // Apply ±10-20% variation to existing timings
         const variationFactor = this.randomProvider.randomFloat(0.85, 1.20);
@@ -142,17 +142,17 @@ class BehaviorProfile {
             if (newPhotoCount !== this.timings.photoViewing.count) {
                 this.timings.photoViewing.count = newPhotoCount;
                 this.timings.photoViewing.delays = this.generatePhotoDelays(newPhotoCount);
-                logger.log(`   📷 Photo viewing updated: ${newPhotoCount} photos`);
+                logger.info(`   📷 Photo viewing updated: ${newPhotoCount} photos`);
             }
         }
 
         // Occasionally toggle mouse movement
         if (this.randomProvider.randomBoolean(0.2)) { // 20% chance
             this.timings.mouseMovement.shouldMove = this.randomProvider.randomBoolean(this.personality.mouseChance);
-            logger.log(`   🖱️  Mouse movement toggled: ${this.timings.mouseMovement.shouldMove}`);
+            logger.info(`   🖱️  Mouse movement toggled: ${this.timings.mouseMovement.shouldMove}`);
         }
 
-        logger.log(`   ⚡ Variation applied: ${Math.round((combinedFactor - 1) * 100)}% timing change`);
+        logger.info(`   ⚡ Variation applied: ${Math.round((combinedFactor - 1) * 100)}% timing change`);
     }
 
     // Simulate natural breaks in behavior
@@ -165,7 +165,7 @@ class BehaviorProfile {
     getBreakDelay() {
         // Natural break: 30-90 seconds
         const breakDelay = this.randomProvider.randomInRange(30000, 90000);
-        logger.log(`🛑 Taking natural break: ${Math.round(breakDelay/1000)}s`);
+        logger.info(`🛑 Taking natural break: ${Math.round(breakDelay/1000)}s`);
         return breakDelay;
     }
 
@@ -173,12 +173,12 @@ class BehaviorProfile {
         const personalityType = this.getPersonalityType();
         const sessionMinutes = Math.round((Date.now() - this.sessionStartTime) / 60000);
 
-        logger.log(`🧠 Personality: ${personalityType} (profiles: ${this.profileCount}, session: ${sessionMinutes}m)`);
-        logger.log(`   Thinking: ${this.timings.thinkingDelay}ms`);
-        logger.log(`   Quick decision: ${this.timings.quickDecisionDelay}ms`);
-        logger.log(`   Next profile: ${this.timings.nextProfileDelay}ms`);
-        logger.log(`   Photos: ${this.timings.photoViewing.count} (${this.timings.photoViewing.delays.join(', ')}ms)`);
-        logger.log(`   Mouse: ${this.timings.mouseMovement.shouldMove ? 'yes' : 'no'}${this.timings.mouseMovement.shouldMove ? ` (${this.timings.mouseMovement.duration}ms, ${this.timings.mouseMovement.steps} steps)` : ''}`);
+        logger.info(`🧠 Personality: ${personalityType} (profiles: ${this.profileCount}, session: ${sessionMinutes}m)`);
+        logger.info(`   Thinking: ${this.timings.thinkingDelay}ms`);
+        logger.info(`   Quick decision: ${this.timings.quickDecisionDelay}ms`);
+        logger.info(`   Next profile: ${this.timings.nextProfileDelay}ms`);
+        logger.info(`   Photos: ${this.timings.photoViewing.count} (${this.timings.photoViewing.delays.join(', ')}ms)`);
+        logger.info(`   Mouse: ${this.timings.mouseMovement.shouldMove ? 'yes' : 'no'}${this.timings.mouseMovement.shouldMove ? ` (${this.timings.mouseMovement.duration}ms, ${this.timings.mouseMovement.steps} steps)` : ''}`);
     }
 }
 

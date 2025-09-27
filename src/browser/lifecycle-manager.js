@@ -11,13 +11,13 @@ class BrowserLifecycleManager {
   }
 
   async initialize() {
-    logger.log("🥷 Launching persistent browser...");
+    logger.info("🥷 Launching persistent browser...");
 
     try {
       // Ensure user data directory exists
       if (!fs.existsSync(this.userDataDir)) {
         fs.mkdirSync(this.userDataDir, { recursive: true });
-        logger.log("📁 Created browser data directory");
+        logger.info("📁 Created browser data directory");
       }
 
       // Try to launch persistent context (reuses existing session)
@@ -35,27 +35,27 @@ class BrowserLifecycleManager {
         timezoneId: "Europe/Stockholm",
       });
 
-      logger.log("✅ Persistent browser context launched");
+      logger.info("✅ Persistent browser context launched");
 
       // Get existing pages or create new one
       const pages = this.context.pages();
       if (pages.length > 0) {
         this.page = pages[0];
-        logger.log("🔄 Reusing existing browser tab");
+        logger.info("🔄 Reusing existing browser tab");
 
         // Check if already on Tinder
         const currentUrl = this.page.url();
         if (!currentUrl.includes('tinder.com')) {
-          logger.log("🌐 Navigating to Tinder...");
+          logger.info("🌐 Navigating to Tinder...");
           await this.page.goto("https://tinder.com/app/recs", {
             waitUntil: "domcontentloaded",
           });
         } else {
-          logger.log("✅ Already on Tinder - session maintained!");
+          logger.info("✅ Already on Tinder - session maintained!");
         }
       } else {
         this.page = await this.context.newPage();
-        logger.log("📄 Created new browser tab");
+        logger.info("📄 Created new browser tab");
 
         await this.page.goto("https://tinder.com/app/recs", {
           waitUntil: "domcontentloaded",
@@ -65,11 +65,11 @@ class BrowserLifecycleManager {
       // Essential anti-detection script
       await this.addAntiDetectionScript();
 
-      logger.log("👤 Persistent browser ready");
+      logger.info("👤 Persistent browser ready");
 
     } catch (error) {
       logger.error("❌ Failed to launch persistent browser:", error.message);
-      logger.log("🔄 Falling back to regular browser...");
+      logger.info("🔄 Falling back to regular browser...");
       await this.fallbackToRegularBrowser();
     }
   }
@@ -94,7 +94,7 @@ class BrowserLifecycleManager {
   }
 
   async fallbackToRegularBrowser() {
-    logger.log("🔄 Starting regular browser fallback...");
+    logger.info("🔄 Starting regular browser fallback...");
 
     try {
       this.browser = await chromium.launch({
@@ -122,7 +122,7 @@ class BrowserLifecycleManager {
         waitUntil: "domcontentloaded",
       });
 
-      logger.log("✅ Fallback browser launched successfully");
+      logger.info("✅ Fallback browser launched successfully");
 
     } catch (fallbackError) {
       logger.error("💥 Fallback browser also failed:", fallbackError.message);
@@ -135,12 +135,12 @@ class BrowserLifecycleManager {
       if (this.context) {
         // For persistent context, just close without destroying user data
         await this.context.close();
-        logger.log("🔒 Browser context closed (data preserved)");
+        logger.info("🔒 Browser context closed (data preserved)");
       }
 
       if (this.browser) {
         await this.browser.close();
-        logger.log("🔒 Browser closed");
+        logger.info("🔒 Browser closed");
       }
     } catch (error) {
       logger.error("⚠️  Browser cleanup error:", error.message);
@@ -148,7 +148,7 @@ class BrowserLifecycleManager {
   }
 
   getPage() {
-    logger.log("🔧 BrowserLifecycleManager.getPage() called - page:", this.page ? "✅ Available" : "❌ NULL/UNDEFINED");
+    logger.info("🔧 BrowserLifecycleManager.getPage() called - page:", this.page ? "✅ Available" : "❌ NULL/UNDEFINED");
     return this.page;
   }
 

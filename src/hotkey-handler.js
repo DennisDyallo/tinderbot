@@ -10,7 +10,7 @@ class HotkeyHandler {
     setupListeners() {
         this.listener.addListener((e, down) => {
             if (e.state === 'DOWN' && e.name === 'ESCAPE' && down['LEFT CTRL']) {
-                logger.log('🛑 CTRL+ESC detected - Initiating shutdown...');
+                logger.info('🛑 CTRL+ESC detected - Initiating shutdown...');
                 this.shouldExit = true;
             }
         });

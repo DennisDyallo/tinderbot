@@ -9,11 +9,11 @@ class ShutdownState extends BaseState {
         await super.onEnter(data);
 
         const reason = data.reason || 'User requested shutdown';
-        logger.log(`🛑 Shutdown initiated: ${reason}`);
+        logger.info(`🛑 Shutdown initiated: ${reason}`);
     }
 
     async execute() {
-        logger.log('🧹 Beginning cleanup process...');
+        logger.info('🧹 Beginning cleanup process...');
 
         try {
             const browser = this.getBrowser();
@@ -22,23 +22,23 @@ class ShutdownState extends BaseState {
             // Cleanup browser
             if (browser) {
                 await browser.cleanup();
-                logger.log('✅ Browser cleanup completed');
+                logger.info('✅ Browser cleanup completed');
             }
 
             // Cleanup hotkeys
             if (hotkeys) {
                 hotkeys.cleanup();
-                logger.log('✅ Hotkey handler cleanup completed');
+                logger.info('✅ Hotkey handler cleanup completed');
             }
 
-            logger.log('✅ All cleanup completed successfully');
+            logger.info('✅ All cleanup completed successfully');
 
         } catch (error) {
             logger.error('⚠️  Error during cleanup:', error.message);
-            logger.log('🔄 Shutdown will proceed despite cleanup errors');
+            logger.info('🔄 Shutdown will proceed despite cleanup errors');
         }
 
-        logger.log('🏁 Shutdown complete - goodbye!');
+        logger.info('🏁 Shutdown complete - goodbye!');
 
         // Signal state machine to stop
         if (this.stateMachine) {
@@ -51,7 +51,7 @@ class ShutdownState extends BaseState {
 
     async onExit(data = {}) {
         // This state should never exit - it's terminal
-        logger.log('❌ Warning: Shutdown state should not exit');
+        logger.info('❌ Warning: Shutdown state should not exit');
     }
 }
 
