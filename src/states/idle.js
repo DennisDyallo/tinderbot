@@ -7,7 +7,7 @@ class IdleState extends BaseState {
 
     async onEnter(data = {}) {
         await super.onEnter(data);
-        console.log('😴 IDLE state (fallback) - should not normally reach here');
+        console.log('😴 Entering IDLE state - waiting for next profile...');
     }
 
     async execute() {
@@ -16,22 +16,36 @@ class IdleState extends BaseState {
         }
 
         const browser = this.getBrowser();
+        const behavior = this.getBehavior();
+
         if (!browser) {
             return { error: 'Browser not available in context' };
         }
 
         try {
-            console.log('⚠️  IDLE state reached - waiting for profile to appear...');
-
-            // Wait for profile photo directly instead of arbitrary delay
-            const profileLoaded = await browser.waitForProfilePhoto();
-
-            if (profileLoaded) {
-                console.log('🔄 Profile loaded - transitioning to analyze');
-                return { nextState: 'ANALYZING' };
+            // Apply next profile delay (time between finishing one profile and starting next)
+            let nextProfileDelay;
+            if (behavior) {
+                nextProfileDelay = behavior.getNextProfileDelay();
             } else {
-                console.log('❌ Profile load timeout in IDLE state');
-                return { nextState: 'ERROR', data: { error: 'Profile load timeout in idle state' } };
+                console.log('⚠️  No behavior profile available - using fallback next profile delay');
+                nextProfileDelay = this.getHumanizedDelay(4000, 500); // ~3-7s with variation
+            }
+
+            console.log(`⏳ Next profile delay: ${nextProfileDelay}ms`);
+            await this.delay(nextProfileDelay);
+
+            console.log('⏳ Waiting for next profile to appear...');
+
+            // Wait for the next profile photo to load
+            const nextProfileLoaded = await browser.waitForProfilePhoto();
+
+            if (nextProfileLoaded) {
+                console.log('🔄 Next profile loaded - ready to analyze');
+                return { nextState: 'WAITING_FOR_PROFILE' };
+            } else {
+                console.log('❌ Timeout waiting for next profile');
+                return { nextState: 'ERROR', data: { error: 'Next profile load timeout in idle state' } };
             }
 
         } catch (error) {

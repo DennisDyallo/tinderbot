@@ -50,25 +50,14 @@ class NopingState extends BaseState {
 
             if (nopeSuccess) {
                 console.log('✅ NOPE sent successfully');
-                console.log('⏳ Waiting for next profile to appear...');
 
-                // Wait for the next profile photo to load
-                const nextProfileLoaded = await browser.waitForProfilePhoto();
-
-                if (nextProfileLoaded) {
-                    console.log('🔄 Next profile loaded - ready to analyze');
-
-                    // Track profile completion for behavior evolution
-                    const behavior = this.getBehavior();
-                    if (behavior) {
-                        behavior.onProfileCompleted();
-                    }
-
-                    return { nextState: 'ANALYZING' }; // Skip IDLE, go straight to analyzing
-                } else {
-                    console.log('❌ Timeout waiting for next profile');
-                    return { nextState: 'ERROR', data: { error: 'Next profile load timeout after nope' } };
+                // Track profile completion for behavior evolution
+                const behavior = this.getBehavior();
+                if (behavior) {
+                    behavior.onProfileCompleted();
                 }
+
+                return { nextState: 'IDLE' };
             } else {
                 console.log('❌ Failed to send NOPE');
                 return { nextState: 'ERROR', data: { error: 'Nope action failed' } };

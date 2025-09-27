@@ -25,53 +25,17 @@ class LikingState extends BaseState {
 
             if (likeSuccess) {
                 console.log('✅ LIKE sent successfully');
-                console.log('⏳ Waiting for next profile to appear...');
 
-                // Wait for the next profile photo to load
-                const nextProfileLoaded = await browser.waitForProfilePhoto();
-
-                if (nextProfileLoaded) {
-                    console.log('🔄 Next profile loaded - ready to analyze');
-
-                    // Track profile completion for behavior evolution
-                    const behavior = this.getBehavior();
-                    if (behavior) {
-                        behavior.onProfileCompleted();
-                    }
-
-                    return { nextState: 'ANALYZING' }; // Skip IDLE, go straight to analyzing
-                } else {
-                    console.log('❌ Timeout waiting for next profile');
-                    return { nextState: 'ERROR', data: { error: 'Next profile load timeout' } };
+                // Track profile completion for behavior evolution
+                const behavior = this.getBehavior();
+                if (behavior) {
+                    behavior.onProfileCompleted();
                 }
+
+                return { nextState: 'IDLE' };
             } else {
-                console.log('❌ Failed to send LIKE - sending NOPE as fallback');
-
-                const nopeSuccess = await browser.clickNopeButton();
-                if (nopeSuccess) {
-                    console.log('👎 NOPE sent as fallback');
-                    console.log('⏳ Waiting for next profile to appear...');
-
-                    // Wait for next profile after nope as well
-                    const nextProfileLoaded = await browser.waitForProfilePhoto();
-                    if (nextProfileLoaded) {
-                        console.log('🔄 Next profile loaded - ready to analyze');
-
-                        // Track profile completion for behavior evolution
-                        const behavior = this.getBehavior();
-                        if (behavior) {
-                            behavior.onProfileCompleted();
-                        }
-
-                        return { nextState: 'ANALYZING' };
-                    } else {
-                        console.log('❌ Timeout waiting for next profile');
-                        return { nextState: 'ERROR', data: { error: 'Next profile load timeout after fallback nope' } };
-                    }
-                } else {
-                    console.log('💥 Both LIKE and NOPE failed');
-                    return { nextState: 'ERROR', data: { error: 'Both like and nope actions failed' } };
-                }
+                console.log('❌ Failed to send LIKE');
+                return { nextState: 'ERROR', data: { error: 'Like action failed' } };
             }
 
         } catch (error) {

@@ -190,57 +190,35 @@ describe('LikingState', () => {
             expect(result).toEqual({ error: 'Browser not available in context' });
         });
 
-        it('should transition to ANALYZING when like succeeds and next profile loads', async () => {
+        it('should transition to IDLE when like succeeds', async () => {
             mockBrowser.clickLikeButtonResult = true;
-            mockBrowser.waitForProfilePhotoResult = true;
             const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
             const result = await state.execute();
 
             expect(mockBrowser.clickLikeButtonCalled).toBe(true);
-            expect(mockBrowser.waitForProfilePhotoCalled).toBe(true);
+            expect(mockBrowser.waitForProfilePhotoCalled).toBe(false);
             expect(consoleSpy).toHaveBeenCalledWith('✅ LIKE sent successfully');
-            expect(consoleSpy).toHaveBeenCalledWith('🔄 Next profile loaded - ready to analyze');
-            expect(result).toEqual({ nextState: 'ANALYZING' });
+            expect(result).toEqual({ nextState: 'IDLE' });
 
             consoleSpy.mockRestore();
         });
 
-        it('should fallback to nope when like fails and transition to ANALYZING', async () => {
+        it('should transition to ERROR when like fails', async () => {
             mockBrowser.clickLikeButtonResult = false;
-            mockBrowser.clickNopeButtonResult = true;
-            mockBrowser.waitForProfilePhotoResult = true;
             const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
             const result = await state.execute();
 
             expect(mockBrowser.clickLikeButtonCalled).toBe(true);
-            expect(mockBrowser.clickNopeButtonCalled).toBe(true);
-            expect(mockBrowser.waitForProfilePhotoCalled).toBe(true);
-            expect(consoleSpy).toHaveBeenCalledWith('❌ Failed to send LIKE - sending NOPE as fallback');
-            expect(consoleSpy).toHaveBeenCalledWith('👎 NOPE sent as fallback');
-            expect(consoleSpy).toHaveBeenCalledWith('🔄 Next profile loaded - ready to analyze');
-            expect(result).toEqual({ nextState: 'ANALYZING' });
+            expect(mockBrowser.clickNopeButtonCalled).toBe(false);
+            expect(mockBrowser.waitForProfilePhotoCalled).toBe(false);
+            expect(consoleSpy).toHaveBeenCalledWith('❌ Failed to send LIKE');
+            expect(result).toEqual({ nextState: 'ERROR', data: { error: 'Like action failed' } });
 
             consoleSpy.mockRestore();
         });
 
-        it('should transition to ERROR when both like and nope fail', async () => {
-            mockBrowser.clickLikeButtonResult = false;
-            mockBrowser.clickNopeButtonResult = false;
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-            const result = await state.execute();
-
-            expect(mockBrowser.clickLikeButtonCalled).toBe(true);
-            expect(mockBrowser.clickNopeButtonCalled).toBe(true);
-            expect(result).toEqual({
-                nextState: 'ERROR',
-                data: { error: 'Both like and nope actions failed' }
-            });
-
-            consoleSpy.mockRestore();
-        });
 
         it('should handle browser errors gracefully', async () => {
             const testError = new Error('Browser like error');
@@ -346,7 +324,7 @@ describe('NopingState', () => {
             expect(mockBehavior.getQuickDecisionDelayCalled).toBe(true);
             expect(delaySpy).toHaveBeenCalledWith(500);
             expect(consoleSpy).toHaveBeenCalledWith('   ⚡ Quick decision delay: 500ms');
-            expect(result).toEqual({ nextState: 'ANALYZING' });
+            expect(result).toEqual({ nextState: 'IDLE' });
 
             delaySpy.mockRestore();
             consoleSpy.mockRestore();
@@ -364,7 +342,7 @@ describe('NopingState', () => {
 
             expect(getHumanizedDelaySpy).toHaveBeenCalledWith(550, 45);
             expect(delaySpy).toHaveBeenCalledWith(450);
-            expect(result).toEqual({ nextState: 'ANALYZING' });
+            expect(result).toEqual({ nextState: 'IDLE' });
 
             getHumanizedDelaySpy.mockRestore();
             delaySpy.mockRestore();
@@ -380,7 +358,7 @@ describe('NopingState', () => {
 
             expect(mockBehavior.getQuickDecisionDelayCalled).toBe(false);
             expect(delaySpy).not.toHaveBeenCalled();
-            expect(result).toEqual({ nextState: 'ANALYZING' });
+            expect(result).toEqual({ nextState: 'IDLE' });
 
             delaySpy.mockRestore();
         });
@@ -394,7 +372,7 @@ describe('NopingState', () => {
 
             expect(mockBrowser.clickNopeButtonCalled).toBe(true);
             expect(consoleSpy).toHaveBeenCalledWith('✅ NOPE sent successfully');
-            expect(result).toEqual({ nextState: 'ANALYZING' });
+            expect(result).toEqual({ nextState: 'IDLE' });
 
             consoleSpy.mockRestore();
         });
