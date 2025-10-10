@@ -1,5 +1,7 @@
 const { GlobalKeyboardListener } = require('node-global-key-listener');
 
+require('./logger');
+
 class HotkeyHandler {
     constructor() {
         this.shouldExit = false;

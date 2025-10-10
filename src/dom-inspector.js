@@ -124,6 +124,126 @@ class DOMInspector {
       // Store original console.info to avoid interference
       const originalLog = console.info;
 
+      // MutationObserver for monitoring DOM changes
+      const profileCardObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList') {
+            // Check for added nodes that might be profile cards
+            mutation.addedNodes.forEach((node) => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                // Look for Tinder profile card patterns
+                if (node.matches && (
+                  node.matches('[data-testid*="card"]') ||
+                  node.matches('.Expand') ||
+                  node.matches('[class*="card"]') ||
+                  node.matches('[class*="Card"]') ||
+                  node.querySelector('[data-testid*="card"]') ||
+                  node.querySelector('.Expand')
+                )) {
+                  originalLog('🔄 DOM_CHANGE_ADDED:', {
+                    type: 'PROFILE_CARD_ADDED',
+                    timestamp: new Date().toISOString(),
+                    element: {
+                      tagName: node.tagName,
+                      className: node.className,
+                      id: node.id,
+                      attributes: Array.from(node.attributes || []).map(attr => ({
+                        name: attr.name,
+                        value: attr.value
+                      }))
+                    },
+                    cardCount: document.querySelectorAll('[data-testid*="card"], .Expand, [class*="card"], [class*="Card"]').length
+                  });
+                }
+              }
+            });
+
+            // Check for removed nodes that might be profile cards
+            mutation.removedNodes.forEach((node) => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                // Look for Tinder profile card patterns
+                if (node.matches && (
+                  node.matches('[data-testid*="card"]') ||
+                  node.matches('.Expand') ||
+                  node.matches('[class*="card"]') ||
+                  node.matches('[class*="Card"]') ||
+                  node.querySelector('[data-testid*="card"]') ||
+                  node.querySelector('.Expand')
+                )) {
+                  originalLog('🔄 DOM_CHANGE_REMOVED:', {
+                    type: 'PROFILE_CARD_REMOVED',
+                    timestamp: new Date().toISOString(),
+                    element: {
+                      tagName: node.tagName,
+                      className: node.className,
+                      id: node.id,
+                      attributes: Array.from(node.attributes || []).map(attr => ({
+                        name: attr.name,
+                        value: attr.value
+                      }))
+                    },
+                    cardCount: document.querySelectorAll('[data-testid*="card"], .Expand, [class*="card"], [class*="Card"]').length
+                  });
+                }
+              }
+            });
+          }
+
+          // Monitor attribute changes that might indicate card state changes
+          if (mutation.type === 'attributes') {
+            const node = mutation.target;
+            if (node.matches && (
+              node.matches('[data-testid*="card"]') ||
+              node.matches('.Expand') ||
+              node.matches('[class*="card"]') ||
+              node.matches('[class*="Card"]')
+            )) {
+              originalLog('🔄 DOM_CHANGE_ATTRIBUTE:', {
+                type: 'PROFILE_CARD_ATTRIBUTE_CHANGED',
+                timestamp: new Date().toISOString(),
+                attributeName: mutation.attributeName,
+                oldValue: mutation.oldValue,
+                newValue: node.getAttribute(mutation.attributeName),
+                element: {
+                  tagName: node.tagName,
+                  className: node.className,
+                  id: node.id
+                }
+              });
+            }
+          }
+        });
+      });
+
+      // Start observing DOM changes
+      setTimeout(() => {
+        profileCardObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeOldValue: true,
+          attributeFilter: ['class', 'style', 'data-testid', 'aria-hidden']
+        });
+        originalLog('🔍 MutationObserver started monitoring profile card changes');
+
+        // Log initial card count
+        const initialCards = document.querySelectorAll('[data-testid*="card"], .Expand, [class*="card"], [class*="Card"]');
+        originalLog('📊 Initial profile card count:', initialCards.length);
+      }, 1000);
+
+      // Swipe action monitoring
+      let lastKeyPress = null;
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ') {
+          lastKeyPress = {
+            key: e.key,
+            timestamp: new Date().toISOString(),
+            action: e.key === 'ArrowLeft' ? 'NOPE' : e.key === 'ArrowRight' ? 'LIKE' : 'VIEW_PHOTO'
+          };
+          originalLog('⌨️  SWIPE_ACTION:', lastKeyPress);
+        }
+      });
+
       // Element highlighting style
       const highlightStyle = `
         outline: 3px solid #ff6b6b !important;
@@ -308,6 +428,126 @@ ${elementInfo.selectors.slice(0, 5).map(s => `║   ${s}`).join('\n')}
       // Store original console.info to avoid interference
       const originalLog = console.info;
 
+      // MutationObserver for monitoring DOM changes
+      const profileCardObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList') {
+            // Check for added nodes that might be profile cards
+            mutation.addedNodes.forEach((node) => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                // Look for Tinder profile card patterns
+                if (node.matches && (
+                  node.matches('[data-testid*="card"]') ||
+                  node.matches('.Expand') ||
+                  node.matches('[class*="card"]') ||
+                  node.matches('[class*="Card"]') ||
+                  node.querySelector('[data-testid*="card"]') ||
+                  node.querySelector('.Expand')
+                )) {
+                  originalLog('🔄 DOM_CHANGE_ADDED:', {
+                    type: 'PROFILE_CARD_ADDED',
+                    timestamp: new Date().toISOString(),
+                    element: {
+                      tagName: node.tagName,
+                      className: node.className,
+                      id: node.id,
+                      attributes: Array.from(node.attributes || []).map(attr => ({
+                        name: attr.name,
+                        value: attr.value
+                      }))
+                    },
+                    cardCount: document.querySelectorAll('[data-testid*="card"], .Expand, [class*="card"], [class*="Card"]').length
+                  });
+                }
+              }
+            });
+
+            // Check for removed nodes that might be profile cards
+            mutation.removedNodes.forEach((node) => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                // Look for Tinder profile card patterns
+                if (node.matches && (
+                  node.matches('[data-testid*="card"]') ||
+                  node.matches('.Expand') ||
+                  node.matches('[class*="card"]') ||
+                  node.matches('[class*="Card"]') ||
+                  node.querySelector('[data-testid*="card"]') ||
+                  node.querySelector('.Expand')
+                )) {
+                  originalLog('🔄 DOM_CHANGE_REMOVED:', {
+                    type: 'PROFILE_CARD_REMOVED',
+                    timestamp: new Date().toISOString(),
+                    element: {
+                      tagName: node.tagName,
+                      className: node.className,
+                      id: node.id,
+                      attributes: Array.from(node.attributes || []).map(attr => ({
+                        name: attr.name,
+                        value: attr.value
+                      }))
+                    },
+                    cardCount: document.querySelectorAll('[data-testid*="card"], .Expand, [class*="card"], [class*="Card"]').length
+                  });
+                }
+              }
+            });
+          }
+
+          // Monitor attribute changes that might indicate card state changes
+          if (mutation.type === 'attributes') {
+            const node = mutation.target;
+            if (node.matches && (
+              node.matches('[data-testid*="card"]') ||
+              node.matches('.Expand') ||
+              node.matches('[class*="card"]') ||
+              node.matches('[class*="Card"]')
+            )) {
+              originalLog('🔄 DOM_CHANGE_ATTRIBUTE:', {
+                type: 'PROFILE_CARD_ATTRIBUTE_CHANGED',
+                timestamp: new Date().toISOString(),
+                attributeName: mutation.attributeName,
+                oldValue: mutation.oldValue,
+                newValue: node.getAttribute(mutation.attributeName),
+                element: {
+                  tagName: node.tagName,
+                  className: node.className,
+                  id: node.id
+                }
+              });
+            }
+          }
+        });
+      });
+
+      // Start observing DOM changes
+      setTimeout(() => {
+        profileCardObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeOldValue: true,
+          attributeFilter: ['class', 'style', 'data-testid', 'aria-hidden']
+        });
+        originalLog('🔍 MutationObserver started monitoring profile card changes');
+
+        // Log initial card count
+        const initialCards = document.querySelectorAll('[data-testid*="card"], .Expand, [class*="card"], [class*="Card"]');
+        originalLog('📊 Initial profile card count:', initialCards.length);
+      }, 1000);
+
+      // Swipe action monitoring
+      let lastKeyPress = null;
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ') {
+          lastKeyPress = {
+            key: e.key,
+            timestamp: new Date().toISOString(),
+            action: e.key === 'ArrowLeft' ? 'NOPE' : e.key === 'ArrowRight' ? 'LIKE' : 'VIEW_PHOTO'
+          };
+          originalLog('⌨️  SWIPE_ACTION:', lastKeyPress);
+        }
+      });
+
       // Element highlighting style
       const highlightStyle = `
         outline: 3px solid #ff6b6b !important;
@@ -478,7 +718,16 @@ ${elementInfo.selectors.slice(0, 5).map(s => `║   ${s}`).join('\n')}
     // Listen for console messages from the page
     this.page.on('console', (msg) => {
       const text = msg.text();
-      if (text.includes('DOM_INSPECTOR_CLICK:') || text.includes('🎯')) {
+      if (text.includes('DOM_INSPECTOR_CLICK:') ||
+          text.includes('DOM_CHANGE_ADDED:') ||
+          text.includes('DOM_CHANGE_REMOVED:') ||
+          text.includes('DOM_CHANGE_ATTRIBUTE:') ||
+          text.includes('SWIPE_ACTION:') ||
+          text.includes('🎯') ||
+          text.includes('🔄') ||
+          text.includes('⌨️') ||
+          text.includes('🔍') ||
+          text.includes('📊')) {
         console.info(text);
       }
     });

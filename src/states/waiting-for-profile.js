@@ -1,5 +1,7 @@
 const BaseState = require('./base-state');
 
+require('../logger');
+
 class WaitingForProfileState extends BaseState {
     constructor(randomProvider = null) {
         super('WAITING_FOR_PROFILE', randomProvider);

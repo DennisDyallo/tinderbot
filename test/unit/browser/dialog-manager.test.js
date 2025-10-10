@@ -12,16 +12,10 @@ describe('DialogManager', () => {
     };
 
     dialogManager = new DialogManager(mockPage);
-
-    // Suppress console logs for cleaner test output
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
     jest.clearAllMocks();
-    logger.info.mockRestore();
-    logger.error.mockRestore();
   });
 
   describe('constructor', () => {

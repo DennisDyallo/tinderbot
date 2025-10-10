@@ -1,5 +1,7 @@
 const RandomProvider = require('../random-provider');
 
+require('../logger');
+
 class BaseState {
     constructor(name, randomProvider = null) {
         this.name = name;

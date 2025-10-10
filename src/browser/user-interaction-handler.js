@@ -1,3 +1,5 @@
+require('../logger');
+
 class UserInteractionHandler {
   constructor(page) {
     logger.info("🔧 UserInteractionHandler constructor - page:", page ? "✅ Available" : "❌ NULL/UNDEFINED");

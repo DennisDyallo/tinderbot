@@ -1,5 +1,7 @@
 const BaseState = require('./base-state');
 
+require('../logger');
+
 class NopingState extends BaseState {
     constructor() {
         super('NOPING');

@@ -74,18 +74,19 @@ describe('WaitingForProfileState', () => {
 
     describe('onEnter', () => {
         it('should log entry message', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             await state.onEnter();
 
-            expect(consoleSpy).toHaveBeenCalledWith('🟢 Entering WAITING_FOR_PROFILE state');
-            expect(consoleSpy).toHaveBeenCalledWith('⏳ Waiting for first profile to load...');
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(consoleSpy.mock.calls[0][1]).toBe('STATE: Entering WAITING_FOR_PROFILE state');
+            expect(consoleSpy.mock.calls[1][1]).toBe('⏳ Waiting for first profile to load...');
 
             consoleSpy.mockRestore();
         });
 
         it('should pass through data to parent', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
             const testData = { test: 'value' };
 
             await state.onEnter(testData);
@@ -163,15 +164,16 @@ describe('WaitingForProfileState', () => {
         });
 
         it('should log appropriate messages during execution', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
             mockBrowser.waitForProfilePhotoResult = true;
             mockRandomProvider.setFixedValue('getHumanizedDelay', 150);
             jest.spyOn(state, 'delay').mockResolvedValue();
 
             await state.execute();
 
-            expect(consoleSpy).toHaveBeenCalledWith('✅ Profile loaded - ready to analyze');
-            expect(consoleSpy).toHaveBeenCalledWith('   😌 Human reaction delay: 150ms');
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(consoleSpy.mock.calls[0][1]).toBe(' Profile loaded - ready to analyze');
+            expect(consoleSpy.mock.calls[1][1]).toBe('     Human reaction delay: 150ms');
 
             consoleSpy.mockRestore();
         });
@@ -179,17 +181,18 @@ describe('WaitingForProfileState', () => {
 
     describe('onExit', () => {
         it('should call parent onExit', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             await state.onExit();
 
-            expect(consoleSpy).toHaveBeenCalledWith('🔴 Exiting WAITING_FOR_PROFILE state');
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(consoleSpy.mock.calls[0][1]).toBe('STATE: Exiting WAITING_FOR_PROFILE state');
 
             consoleSpy.mockRestore();
         });
 
         it('should handle data parameter', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
             const testData = { test: 'value' };
 
             await state.onExit(testData);
@@ -201,7 +204,7 @@ describe('WaitingForProfileState', () => {
 
     describe('integration scenarios', () => {
         it('should handle complete success flow', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
             jest.spyOn(state, 'delay').mockResolvedValue();
 
             await state.onEnter();

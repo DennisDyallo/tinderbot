@@ -3,6 +3,8 @@ const ProfileDetector = require('./browser/profile-detector');
 const UserInteractionHandler = require('./browser/user-interaction-handler');
 const DialogManager = require('./browser/dialog-manager');
 
+require('./logger');
+
 class BrowserController {
   constructor() {
     this.lifecycleManager = new BrowserLifecycleManager();

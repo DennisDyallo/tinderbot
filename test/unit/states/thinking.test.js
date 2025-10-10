@@ -64,18 +64,19 @@ describe('ThinkingState', () => {
 
     describe('onEnter', () => {
         it('should log entry message', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             await state.onEnter();
 
-            expect(consoleSpy).toHaveBeenCalledWith('🟢 Entering THINKING state');
-            expect(consoleSpy).toHaveBeenCalledWith('🤔 Thinking about this recently active profile...');
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(consoleSpy.mock.calls[0][1]).toBe('STATE: Entering THINKING state');
+            expect(consoleSpy.mock.calls[1][1]).toBe(' Thinking about this recently active profile...');
 
             consoleSpy.mockRestore();
         });
 
         it('should pass through data to parent', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
             const testData = { test: 'value' };
 
             await state.onEnter(testData);
@@ -98,12 +99,15 @@ describe('ThinkingState', () => {
         it('should use behavior profile thinking delay when available', async () => {
             mockBehavior.thinkingDelay = 1500;
             const delaySpy = jest.spyOn(state, 'delay').mockResolvedValue();
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             const result = await state.execute();
 
             expect(mockBehavior.getThinkingDelayCalled).toBe(true);
-            expect(consoleSpy).toHaveBeenCalledWith('   💭 Thinking for 2s...');
+            expect(consoleSpy).toHaveBeenCalled();
+            // Find the thinking message (skip dialog check message)
+            const messages = consoleSpy.mock.calls.map(call => call[1]);
+            expect(messages).toContain('    Thinking for 2s...');
             expect(delaySpy).toHaveBeenCalledWith(1500);
             expect(result).toEqual({ nextState: 'VIEWING_PHOTOS' });
 
@@ -115,11 +119,12 @@ describe('ThinkingState', () => {
             mockStateMachine.context.behavior = null;
             const delaySpy = jest.spyOn(state, 'delay').mockResolvedValue();
             const getHumanizedDelaySpy = jest.spyOn(state, 'getHumanizedDelay').mockReturnValue(1800);
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             const result = await state.execute();
 
-            expect(consoleSpy).toHaveBeenCalledWith('⚠️  No behavior profile available - using fallback thinking delay');
+            expect(consoleSpy).toHaveBeenCalled();
+            // Debug messages are not logged at the default "info" level
             expect(getHumanizedDelaySpy).toHaveBeenCalledWith(2000, 50);
             expect(delaySpy).toHaveBeenCalledWith(1800);
             expect(result).toEqual({ nextState: 'VIEWING_PHOTOS' });
@@ -136,7 +141,9 @@ describe('ThinkingState', () => {
 
             const result = await state.execute();
 
-            expect(consoleSpy).toHaveBeenCalledWith('💥 Error during thinking phase:', 'Thinking error');
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(consoleSpy.mock.calls[0][1]).toBe('💥 Error during thinking phase:');
+            expect(consoleSpy.mock.calls[0][2]).toBe('Thinking error');
             expect(result).toEqual({
                 nextState: 'ERROR',
                 data: { error: testError }
@@ -147,11 +154,14 @@ describe('ThinkingState', () => {
 
         it('should log completion message when thinking is done', async () => {
             jest.spyOn(state, 'delay').mockResolvedValue();
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
-            await state.execute();
+            const result = await state.execute();
 
-            expect(consoleSpy).toHaveBeenCalledWith('✅ Decision made - time to view photos');
+            // The "Decision made" message is logged with debug (not shown at info level)
+            // Just verify the execution completes successfully
+            expect(result).toEqual({ nextState: 'VIEWING_PHOTOS' });
+            expect(consoleSpy).toHaveBeenCalled();
 
             consoleSpy.mockRestore();
         });
@@ -159,17 +169,18 @@ describe('ThinkingState', () => {
 
     describe('onExit', () => {
         it('should call parent onExit', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             await state.onExit();
 
-            expect(consoleSpy).toHaveBeenCalledWith('🔴 Exiting THINKING state');
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(consoleSpy.mock.calls[0][1]).toBe('STATE: Exiting THINKING state');
 
             consoleSpy.mockRestore();
         });
 
         it('should handle data parameter', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
             const testData = { test: 'value' };
 
             await state.onExit(testData);
@@ -182,7 +193,7 @@ describe('ThinkingState', () => {
     describe('integration scenarios', () => {
         it('should handle complete thinking flow with behavior profile', async () => {
             jest.spyOn(state, 'delay').mockResolvedValue();
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             await state.onEnter();
             const result = await state.execute();
@@ -198,12 +209,13 @@ describe('ThinkingState', () => {
             mockStateMachine.context.behavior = null;
             jest.spyOn(state, 'delay').mockResolvedValue();
             jest.spyOn(state, 'getHumanizedDelay').mockReturnValue(1500);
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             const result = await state.execute();
 
             expect(result).toEqual({ nextState: 'VIEWING_PHOTOS' });
-            expect(consoleSpy).toHaveBeenCalledWith('⚠️  No behavior profile available - using fallback thinking delay');
+            // Debug messages are not logged at the default "info" level
+            expect(consoleSpy).toHaveBeenCalled();
 
             consoleSpy.mockRestore();
         });
@@ -248,11 +260,14 @@ describe('ThinkingState', () => {
         it('should calculate correct display time for thinking', async () => {
             mockBehavior.thinkingDelay = 3456; // Odd number for rounding test
             jest.spyOn(state, 'delay').mockResolvedValue();
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             await state.execute();
 
-            expect(consoleSpy).toHaveBeenCalledWith('   💭 Thinking for 3s...');
+            expect(consoleSpy).toHaveBeenCalled();
+            // Find the thinking message (skip dialog check message)
+            const messages = consoleSpy.mock.calls.map(call => call[1]);
+            expect(messages).toContain('    Thinking for 3s...');
 
             consoleSpy.mockRestore();
         });

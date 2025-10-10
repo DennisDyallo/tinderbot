@@ -1,5 +1,7 @@
 const RandomProvider = require('./random-provider');
 
+require('./logger');
+
 class BehaviorProfile {
     constructor(randomProvider = null) {
         this.randomProvider = randomProvider || RandomProvider.getInstance();

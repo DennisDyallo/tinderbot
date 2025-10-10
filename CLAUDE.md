@@ -20,6 +20,15 @@ node src/index.js
 npm install
 ```
 
+**Running tests:**
+```bash
+npm test                  # Run all tests
+npm run test:watch        # Run tests in watch mode
+npm run test:coverage     # Run tests with coverage report
+npm run test:unit         # Run only unit tests
+npm run test:states       # Run only state tests
+```
+
 **Stopping the bot:**
 - Use CTRL+ESC hotkey while bot is running
 - Or kill the process manually
@@ -49,6 +58,12 @@ The application follows a modular class-based architecture with clear separation
 4. **HotkeyHandler (`src/hotkey-handler.js`)** - Global hotkey management
    - Monitors for CTRL+ESC shutdown command using system-level key listener
    - Provides graceful shutdown mechanism independent of browser focus
+
+5. **Logger (`src/logger.js`)** - Centralized logging system
+   - Singleton logger instance with configurable log levels (error, warn, info, debug)
+   - Timestamps all log messages for debugging
+   - Must be required in any file that uses logging: `require('./logger')` or `require('../logger')`
+   - Exposes globally as `logger` after requiring
 
 ### User Flow Logic
 
@@ -87,6 +102,13 @@ The bot follows this precise sequence for each profile:
 - Comprehensive null checks for behavior profiles with fallback to simple timing
 - Graceful degradation if any component fails
 - Screenshot debugging capabilities for troubleshooting selector issues
+- All errors are logged through the centralized logger for consistent debugging
+
+### Testing
+- Comprehensive unit test suite with 248+ tests covering all components
+- Tests use Jest framework with mock implementations
+- State machine, browser controller, and all state classes have full test coverage
+- Run `npm test` before committing to ensure no regressions
 
 ### Selector Strategy
 - Multiple fallback selectors for "Recently Active" detection
@@ -107,6 +129,8 @@ When modifying this codebase:
 3. **Behavioral changes**: Consider impact on all three personality types (impatient/normal/careful)
 4. **Selector updates**: Always provide multiple fallback selectors for UI elements
 5. **Error handling**: Implement graceful fallbacks that allow the bot to continue operation
+6. **Logger usage**: Always add `require('./logger')` or `require('../logger')` at the top of any file that uses logger methods (logger.info, logger.error, etc.). The logger is globally available after requiring.
+7. **Testing**: Run tests before committing changes. All source files should have corresponding unit tests. When adding logger calls to source files, remember that logger outputs to console with a timestamp prefix.
 
 ## Security Considerations
 

@@ -1,3 +1,5 @@
+require('./logger');
+
 class StateMachine {
     constructor(initialState = null) {
         this.currentState = null;

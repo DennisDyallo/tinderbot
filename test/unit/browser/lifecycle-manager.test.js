@@ -49,17 +49,10 @@ describe('BrowserLifecycleManager', () => {
     // Mock fs
     fs.existsSync = jest.fn().mockReturnValue(true);
     fs.mkdirSync = jest.fn();
-
-
-    // Suppress console logs for cleaner test output
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
     jest.clearAllMocks();
-    logger.info.mockRestore();
-    logger.error.mockRestore();
   });
 
   describe('constructor', () => {

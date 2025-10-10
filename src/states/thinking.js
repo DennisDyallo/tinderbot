@@ -1,5 +1,7 @@
 const BaseState = require('./base-state');
 
+require('../logger');
+
 class ThinkingState extends BaseState {
     constructor(randomProvider = null) {
         super('THINKING', randomProvider);

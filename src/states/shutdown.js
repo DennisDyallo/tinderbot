@@ -1,5 +1,7 @@
 const BaseState = require('./base-state');
 
+require('../logger');
+
 class ShutdownState extends BaseState {
     constructor() {
         super('SHUTDOWN');

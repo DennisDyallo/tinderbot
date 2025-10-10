@@ -1,5 +1,7 @@
 const BaseState = require('./base-state');
 
+require('../logger');
+
 class LikingState extends BaseState {
     constructor() {
         super('LIKING');

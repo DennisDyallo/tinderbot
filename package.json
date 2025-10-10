@@ -27,6 +27,7 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "setupFilesAfterEnv": ["<rootDir>/test/setup.js"],
     "collectCoverageFrom": [
       "src/**/*.js",
       "!src/index.js",

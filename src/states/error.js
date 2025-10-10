@@ -1,5 +1,7 @@
 const BaseState = require('./base-state');
 
+require('../logger');
+
 class ErrorState extends BaseState {
     constructor() {
         super('ERROR');

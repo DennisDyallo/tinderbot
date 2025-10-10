@@ -1,3 +1,5 @@
+require('../logger');
+
 class DialogManager {
   constructor(page) {
     this.page = page;

@@ -1,3 +1,5 @@
+require('../logger');
+
 class ProfileDetector {
   constructor(page) {
     this.page = page;

@@ -1,5 +1,7 @@
 const BaseState = require('./base-state');
 
+require('../logger');
+
 class DecidingState extends BaseState {
     constructor() {
         super('DECIDING');

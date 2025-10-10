@@ -110,7 +110,7 @@ class TinderBot {
             // Generate behavior profile and add to context
             try {
                 const behavior = new BehaviorProfile(this.randomProvider);
-                behavior.infoBehavior();
+                behavior.logBehavior();
                 this.stateMachine.setContext('behavior', behavior);
             } catch (behaviorError) {
                 logger.error('❌ Failed to create behavior profile:', behaviorError.message);

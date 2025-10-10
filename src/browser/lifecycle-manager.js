@@ -2,6 +2,8 @@ const { chromium } = require("playwright");
 const path = require("path");
 const fs = require("fs");
 
+require('../logger');
+
 class BrowserLifecycleManager {
   constructor() {
     this.browser = null;

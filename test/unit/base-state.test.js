@@ -105,20 +105,22 @@ describe('BaseState', () => {
 
     describe('lifecycle methods', () => {
         it('should have default onEnter implementation', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             await testState.onEnter({ data: 'test' });
 
-            expect(consoleSpy).toHaveBeenCalledWith('🟢 Entering TEST state');
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(consoleSpy.mock.calls[0][1]).toBe('STATE: Entering TEST state');
             consoleSpy.mockRestore();
         });
 
         it('should have default onExit implementation', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             await testState.onExit({ data: 'test' });
 
-            expect(consoleSpy).toHaveBeenCalledWith('🔴 Exiting TEST state');
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(consoleSpy.mock.calls[0][1]).toBe('STATE: Exiting TEST state');
             consoleSpy.mockRestore();
         });
 

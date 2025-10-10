@@ -64,18 +64,19 @@ describe('AnalyzingState', () => {
 
     describe('onEnter', () => {
         it('should log entry message', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             await state.onEnter();
 
-            expect(consoleSpy).toHaveBeenCalledWith('🟢 Entering ANALYZING state');
-            expect(consoleSpy).toHaveBeenCalledWith('🔍 Analyzing profile for Recently Active status...');
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(consoleSpy.mock.calls[0][1]).toBe('STATE: Entering ANALYZING state');
+            expect(consoleSpy.mock.calls[1][1]).toBe('🔍 Analyzing profile for Recently Active status...');
 
             consoleSpy.mockRestore();
         });
 
         it('should pass through data to parent', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
             const testData = { test: 'value' };
 
             await state.onEnter(testData);
@@ -105,12 +106,15 @@ describe('AnalyzingState', () => {
 
         it('should transition to THINKING when profile is recently active', async () => {
             mockBrowser.checkForRecentlyActiveResult = true;
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             const result = await state.execute();
 
             expect(mockBrowser.checkForRecentlyActiveCalled).toBe(true);
-            expect(consoleSpy).toHaveBeenCalledWith('✅ Profile is Recently Active - proceeding to think');
+            expect(consoleSpy).toHaveBeenCalled();
+            // Find the message we care about (skip dialog check message)
+            const messages = consoleSpy.mock.calls.map(call => call[1]);
+            expect(messages).toContain('Profile is Recently Active - proceeding to think');
             expect(result).toEqual({
                 nextState: 'THINKING',
                 data: { isRecentlyActive: true }
@@ -121,12 +125,15 @@ describe('AnalyzingState', () => {
 
         it('should transition to NOPING when profile is not recently active', async () => {
             mockBrowser.checkForRecentlyActiveResult = false;
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             const result = await state.execute();
 
             expect(mockBrowser.checkForRecentlyActiveCalled).toBe(true);
-            expect(consoleSpy).toHaveBeenCalledWith('❌ Profile not Recently Active - will send quick nope');
+            expect(consoleSpy).toHaveBeenCalled();
+            // Find the message we care about (skip dialog check message)
+            const messages = consoleSpy.mock.calls.map(call => call[1]);
+            expect(messages).toContain('Profile not Recently Active - will send quick nope');
             expect(result).toEqual({
                 nextState: 'NOPING',
                 data: { isRecentlyActive: false, quickDecision: true }
@@ -142,7 +149,9 @@ describe('AnalyzingState', () => {
 
             const result = await state.execute();
 
-            expect(consoleSpy).toHaveBeenCalledWith('💥 Error analyzing profile:', 'Browser analysis error');
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(consoleSpy.mock.calls[0][1]).toBe('💥 Error analyzing profile:');
+            expect(consoleSpy.mock.calls[0][2]).toBe('Browser analysis error');
             expect(result).toEqual({
                 nextState: 'ERROR',
                 data: { error: testError }
@@ -154,17 +163,18 @@ describe('AnalyzingState', () => {
 
     describe('onExit', () => {
         it('should call parent onExit', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
 
             await state.onExit();
 
-            expect(consoleSpy).toHaveBeenCalledWith('🔴 Exiting ANALYZING state');
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(consoleSpy.mock.calls[0][1]).toBe('STATE: Exiting ANALYZING state');
 
             consoleSpy.mockRestore();
         });
 
         it('should handle data parameter', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
             const testData = { test: 'value' };
 
             await state.onExit(testData);
@@ -176,7 +186,7 @@ describe('AnalyzingState', () => {
 
     describe('integration scenarios', () => {
         it('should handle complete recently active flow', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
             mockBrowser.checkForRecentlyActiveResult = true;
 
             await state.onEnter();
@@ -193,7 +203,7 @@ describe('AnalyzingState', () => {
         });
 
         it('should handle complete not recently active flow', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
             mockBrowser.checkForRecentlyActiveResult = false;
 
             await state.onEnter();
