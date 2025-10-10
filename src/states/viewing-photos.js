@@ -48,14 +48,14 @@ class ViewingPhotosState extends BaseState {
             logger.info(`   Will view ${photoData.count} photos`);
 
             // Use the refactored browser controller methods
-            const viewPhotosSuccess = await browser.viewPhotos(behavior);
+            const viewPhotosSuccess = await browser.viewPhotos({ photoViewing: photoData });
             if (!viewPhotosSuccess) {
                 logger.info('⚠️  Photo viewing failed - continuing anyway');
             }
 
             // Perform optional mouse movement
             if (mouseData && mouseData.shouldMove) {
-                const mouseSuccess = await browser.performMouseMovement(behavior);
+                const mouseSuccess = await browser.performMouseMovement({ mouseMovement: mouseData });
                 if (!mouseSuccess) {
                     logger.info('⚠️  Mouse movement failed - continuing anyway');
                 }
